@@ -4,6 +4,7 @@ import * as bodyParser from "body-parser";
 
 import tokenCrud from './api/token/crud'
 import voiceCrud from './api/voice/crud'
+import usersCrud from './api/users/crud'
 
 //initialize express server
 const app = express();
@@ -24,5 +25,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/token', tokenCrud);
 app.use('/voice', voiceCrud);
+app.use('/users', usersCrud);
 
 export const api = functions.https.onRequest(app);
