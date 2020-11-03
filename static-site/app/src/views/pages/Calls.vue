@@ -1,9 +1,8 @@
 <script>
-// @ is an alias to /src
 import { Device } from 'twilio-client'
 
 export default {
-    name: 'Home',
+    name: 'Calls',
     data: () => ({
         countryCode: '52',
         currentNumber: '3323436466',

@@ -1,31 +1,27 @@
 <script>
-import axios from './axios'
+import axios from "./axios";
 
 export default {
-    name: 'app',
-    methods: {
-        async getToken() {
-            const result = await axios.get('/token')
+  name: "app",
+  methods: {
+    async getToken() {
+      const result = await axios.get("/token");
 
-            if(result.data) {
-                const token = result.data.token
-                this.$store.dispatch('setToken', token)
-            }
-        }
+      if (result.data) {
+        const token = result.data.token;
+        this.$store.dispatch("setToken", token);
+      }
     },
-    created() {
-        this.getToken()
-    }
-}
+  },
+  created() {
+    this.getToken();
+  },
+};
 </script>
 
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <router-view />
   </div>
 </template>
 
