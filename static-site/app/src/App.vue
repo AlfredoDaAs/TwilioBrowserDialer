@@ -1,5 +1,6 @@
 <script>
 import axios from "./axios";
+import { initFirebaseApp } from './firebase'
 
 export default {
   name: "app",
@@ -14,7 +15,8 @@ export default {
     },
   },
   created() {
-    this.getToken();
+        initFirebaseApp();
+        this.getToken();
   },
 };
 </script>

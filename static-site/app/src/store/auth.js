@@ -1,10 +1,35 @@
+import axios from '../axios'
+
 const state = {
-    user: null
+    user: null,
+    error: null
 }
 
-const actions = {}
+const actions = {
+    authenticate: async ({ commit }, token) => {
+        try {
+            const response = axios.post('/auth', {
+                token: token
+            })
 
-const mutations = {}
+            console.log('data', response.data);
+            if(response.data && response.data.status === 'ok') {
+                commit('loginSuccess', response.data.user)
+            }
+        } catch (error) {
+            commit('loginError', error.message)
+        }
+    }
+}
+
+const mutations = {
+    loginSuccess: (state, payload) => {
+        state.user = payload
+    },
+    loginError: (state, error) => {
+        state.error = error
+    }
+}
 
 const getters = {}
 

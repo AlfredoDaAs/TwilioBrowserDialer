@@ -12,6 +12,7 @@
     "bootstrap": "^4.5.3",
     "bootstrap-vue": "^2.18.1",
     "core-js": "^3.6.5",
+    "firebase": "^8.0.0",
     "node-sass": "^4.14.1",
     "twilio-client": "^1.12.5",
     "vue": "^2.6.11",

@@ -1,5 +1,8 @@
 import { initDevice } from '../twilio'
 
+
+// this is the twilio device token
+
 const state = {
     token: null
 }
