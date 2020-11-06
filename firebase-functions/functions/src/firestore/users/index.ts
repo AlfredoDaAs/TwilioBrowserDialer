@@ -1,5 +1,5 @@
 import AbstractCollection from '../../firebase/AbstractCollection'
-import { throwUntrustedClientError } from '../../common/FriendlyError'
+// import { throwUntrustedClientError } from '../../common/FriendlyError'
 
 const collectionName = 'users'
 

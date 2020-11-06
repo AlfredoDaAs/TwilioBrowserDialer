@@ -11,6 +11,7 @@ router.post('/', (request, response) => {
     console.log('request.body', request.body);
     
     voiceResponse.dial({
+        // this will need to update a more dynamic way
         callerId: '+12512377747', //request.body.CallSid,
     }, request.body.number);
 
