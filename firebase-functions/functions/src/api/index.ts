@@ -4,7 +4,7 @@ import env from '../common/env'
 import User from '../firestore/users'
 
 export const apiValidation = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const auth = req.headers['authorization']
+    const auth = req.headers.authorization
 
     if(auth) {
         const token = auth.split(' ')[1]
@@ -32,6 +32,7 @@ export const apiValidation = (req: express.Request, res: express.Response, next:
 
             req.isAdmin = user.isAdmin
             next()
+            return;
         })
 
         return;
