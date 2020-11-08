@@ -1,6 +1,72 @@
 <script>
+import axios from '../../axios'
+import moment from 'moment'
+
 export default {
-    namee: 'Users'
+    name: 'Users',
+    data() {
+        return {
+            usersList: [],
+            columns: [
+                {
+                    label: 'Id',
+                    field: 'id',
+                    hidden: true
+                },
+                {
+                    label: 'Name',
+                    field: 'name'
+                },
+                {
+                    label: 'Email',
+                    field: 'email'
+                },
+                {
+                    label: 'Admin',
+                    field: 'isAdmin',
+                    formatFn: this.formatIsAdmin
+                },
+                {
+                    label: 'Created At',
+                    field: 'createdAt',
+                    formatFn: this.formatDate
+                }
+            ],
+            paginationOptions: {
+                enabled: true,
+                mode: 'records',
+                perPage: 10,
+                position: 'bottom'
+            },
+            searchOptions: {
+                enabled: true,
+                skipDiacritics: true,
+                placeholder: 'Search for a User'
+            }
+        }
+    },
+    methods: {
+        async getUsers() {
+            try {
+                const result = await axios.get('/users')
+
+                if(result.data) {
+                    this.usersList = result.data
+                }
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
+        formatIsAdmin(value) {
+            return value ? 'Admin' : 'User';
+        },
+        formatDate(value) {
+            return moment(value).format('MMMM Do YYYY, h:mm:ss a')
+        }
+    },
+    created() {
+        this.getUsers()
+    }
 }
 </script>
 
@@ -21,7 +87,12 @@ export default {
                 <h3>Search for a User</h3>
             </div>
             <div>
-                // will display a datatable
+                <vue-good-table
+                    :columns="columns"
+                    :rows="usersList"
+                    :pagination-options="paginationOptions"
+                    :search-options="searchOptions"
+                />
             </div>
         </div>
     </b-container>

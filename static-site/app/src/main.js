@@ -1,11 +1,17 @@
 import Vue from 'vue'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
+import VueGoodTablePlugin from 'vue-good-table';
 
 import App from './App.vue'
 import router from './router'
 import store from './store'
 
 import '@/assets/scss/custom.scss'
+
+// import the styles
+import 'vue-good-table/dist/vue-good-table.css'
+
+Vue.use(VueGoodTablePlugin);
 
 // Install BootstrapVue
 Vue.use(BootstrapVue)
