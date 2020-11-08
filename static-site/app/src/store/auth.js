@@ -1,37 +1,59 @@
 import axios from '../axios'
 
 const state = {
-    user: null,
-    error: null
+    token: null,
+    name: null,
+    email: null,
+    error: null,
+    isAdmin: false
 }
 
 const actions = {
     authenticate: async ({ commit }, token) => {
         try {
-            const response = axios.post('/auth', {
+            const response = await axios.post('/auth', {
                 token: token
             })
 
-            console.log('data', response.data);
-            if(response.data && response.data.status === 'ok') {
-                commit('loginSuccess', response.data.user)
+            const data = response.data
+            if(data && data.status === 'ok') {
+                commit('loginSuccess', data)
             }
         } catch (error) {
             commit('loginError', error.message)
         }
+    },
+
+    logout: ({ commit }) => {
+        commit('logout')
     }
 }
 
 const mutations = {
     loginSuccess: (state, payload) => {
-        state.user = payload
+        state.token = payload.token
+        state.name = payload.name
+        state.email = payload.email
     },
     loginError: (state, error) => {
         state.error = error
+    },
+    logout: (state) => {
+        state.token = null
+        state.name = null
+        state.email = null
     }
 }
 
-const getters = {}
+const getters = {
+    getToken: (state) => {
+        return state.token ? state.token : '';
+    },
+
+    isAuthenticated: (state) => {
+        return state.token !== null && state.token !== '' ? true : false;
+    }
+}
 
 export default {
     state,
