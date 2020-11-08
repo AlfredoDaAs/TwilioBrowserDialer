@@ -5,6 +5,7 @@ import * as bodyParser from "body-parser";
 import { initializeFirebase } from './firebase'
 
 import authValidation from './auth'
+import { apiValidation } from './api'
 
 import tokenCrud from './api/token/crud'
 import voiceCrud from './api/voice/crud'
@@ -32,8 +33,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/auth', authValidation);
 
-// app.use(apiValidation);
-
+// from here down app is protected by token
+app.use(apiValidation);
 app.use('/token', tokenCrud);
 app.use('/voice', voiceCrud);
 app.use('/users', usersCrud);

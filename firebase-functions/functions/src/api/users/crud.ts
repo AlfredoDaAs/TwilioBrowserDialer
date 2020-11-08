@@ -1,4 +1,5 @@
 import * as express from 'express'
+import { adminMiddleware } from '../../middlewares/admin'
 
 const router = express.Router()
 
@@ -8,15 +9,15 @@ router.get('/', (req, res) => {
 
 })
 
-router.post('/', (req, res) => {
+router.post('/', adminMiddleware, (req, res) => {
 
 })
 
-router.put('/:id', (req, res) => {
+router.put('/:id', adminMiddleware, (req, res) => {
 
 })
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', adminMiddleware, (req, res) => {
 
 })
 
