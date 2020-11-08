@@ -2,6 +2,7 @@
 // @ is an alias to /src
 import Header from "@/components/header";
 import activeUsers from '@/components/activeUsers';
+import axios from "../../axios";
 
 export default {
     name: 'Home',
@@ -9,6 +10,19 @@ export default {
         Header,
         activeUsers
     },
+    methods: {
+        async getToken() {
+            const result = await axios.get("/token");
+
+            if (result.data) {
+                const token = result.data.token;
+                this.$store.dispatch("setToken", token);
+            }
+        },
+    },
+    created() {
+        this.getToken();
+    }
 }
 </script>
 
