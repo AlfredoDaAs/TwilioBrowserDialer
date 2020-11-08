@@ -1,6 +1,14 @@
 <script>
 export default {
-    name: 'Header'
+    name: 'Header',
+    methods: {
+        doLogout() {
+            this.$store.dispatch('logout')
+                .then(() => {
+                    this.$router.push('/login')
+                })
+        }
+    }
 }
 </script>
 
@@ -19,7 +27,7 @@ export default {
                         Calls
                     </b-nav-item>
                     <b-nav-item-dropdown text="User" right>
-                        <b-dropdown-item href="#">Sign out</b-dropdown-item>
+                        <b-dropdown-item href="#" @click="doLogout">Sign out</b-dropdown-item>
                     </b-nav-item-dropdown>
                 </b-navbar-nav>
             </b-collapse>
