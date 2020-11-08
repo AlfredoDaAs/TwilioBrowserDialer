@@ -24,6 +24,9 @@ export default {
 
             // make something with the token
             this.$store.dispatch('authenticate', idToken)
+                .then(() => {
+                    this.$router.push('/')
+                })
       }
   }
 };
