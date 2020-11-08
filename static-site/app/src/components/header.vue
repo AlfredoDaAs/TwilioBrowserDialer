@@ -1,12 +1,19 @@
 <script>
+import firebase from "firebase/app";
+import { mapGetters } from 'vuex'
+
 export default {
     name: 'Header',
+    computed: mapGetters(['getName']),
     methods: {
         doLogout() {
-            this.$store.dispatch('logout')
-                .then(() => {
-                    this.$router.push('/login')
-                })
+            firebase.auth().signOut()
+            .then(() => {
+                return this.$store.dispatch('logout')
+            })
+            .then(() => {
+                this.$router.push('/login')
+            })
         }
     }
 }
@@ -26,7 +33,7 @@ export default {
                     <b-nav-item to="calls">
                         Calls
                     </b-nav-item>
-                    <b-nav-item-dropdown text="User" right>
+                    <b-nav-item-dropdown :text="getName" right>
                         <b-dropdown-item href="#" @click="doLogout">Sign out</b-dropdown-item>
                     </b-nav-item-dropdown>
                 </b-navbar-nav>

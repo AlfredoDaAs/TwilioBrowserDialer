@@ -52,6 +52,10 @@ const getters = {
 
     isAuthenticated: (state) => {
         return state.token !== null && state.token !== '' ? true : false;
+    },
+
+    getName: (state) => {
+        return state.name.length > 0 ? `Welcome ${state.name}!` : 'User';
     }
 }
 
