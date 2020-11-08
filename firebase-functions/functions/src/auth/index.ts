@@ -49,16 +49,17 @@ router.post('/', async (req: express.Request, res: express.Response) => {
             user = await User.readOne(id)
         }
 
-        const jwtToken = jwt.sign({ name: user.name, email: user.email }, env().jwt.token, { expiresIn: "1d" })
+        const jwtToken = jwt.sign({ name: user.name, email: user.email, isAdmin: user.isAdmin }, env().jwt.key, { expiresIn: "1d" })
 
         res.json({
             status: 'ok',
             token: jwtToken,
             name: user.name,
-            email: user.email
+            email: user.email,
+            isAdmin: user.isAdmin
         })
     } catch (error) {
-        console.log('error', error.message);
+        console.log('error', error);
         
         res.json(error.message)
     }
