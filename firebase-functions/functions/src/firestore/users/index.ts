@@ -13,17 +13,17 @@ class Collection extends AbstractCollection {
         metadata: null
     }
 
-    public findByEmail = async (email:string): Promise<any> => {
+    public async findByEmail (email:string): Promise<any> {
         const result = (await this.collection.where('email', '==', email).get()).docs
 
-        if(result.empty) {
+        if(result.length === 0) {
             return null;
         }
-
+        
         return result[0].data()
     }
 
-    public getAllUsers = async (): Promise<any[]> => {
+    public async getAllUsers (): Promise<any[]> {
         const result = (await this.collection.get()).docs
 
         return result.map((doc:any) => doc.data())
