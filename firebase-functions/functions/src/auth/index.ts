@@ -1,8 +1,8 @@
 import * as admin from "firebase-admin"
+import * as functions from 'firebase-functions';
 import * as express from 'express'
 import User from '../firestore/users'
 import * as jwt from 'jsonwebtoken'
-import env from '../common/env'
 
 const router = express.Router();
 
@@ -29,8 +29,6 @@ router.post('/', async (req: express.Request, res: express.Response) => {
         let user = await User.findByEmail(decodedIdToken.email as string)
 
         if(!user) {
-            console.log('do something...');
-            
             const id = await User.createOne({
                 name: decodedIdToken.name,
                 email: decodedIdToken.email,
@@ -49,7 +47,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
             user = await User.readOne(id)
         }
 
-        const jwtToken = jwt.sign({ name: user.name, email: user.email, isAdmin: user.isAdmin }, env().jwt.key, { expiresIn: "1d" })
+        const jwtToken = jwt.sign({ name: user.name, email: user.email, isAdmin: user.isAdmin }, functions.config().jwt.key, { expiresIn: "1d" })
 
         res.json({
             status: 'ok',
