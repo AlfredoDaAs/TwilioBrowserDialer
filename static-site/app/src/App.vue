@@ -1,22 +1,21 @@
 <script>
-import axios from "./axios";
-import { initFirebaseApp } from './firebase'
+import { initFirebaseApp } from "./firebase";
+import { mapGetters } from "vuex";
+import { refreshInstanceHeaders } from "./axios";
 
 export default {
   name: "app",
-  methods: {
-    async getToken() {
-      const result = await axios.get("/token");
-
-      if (result.data) {
-        const token = result.data.token;
-        this.$store.dispatch("setToken", token);
+  computed: mapGetters(['getToken']),
+  watch: {
+      getToken(newToken, oldToken) {
+          if(newToken !== oldToken) {
+              refreshInstanceHeaders(newToken)
+          }
       }
-    },
   },
   created() {
-        initFirebaseApp();
-        this.getToken();
+    initFirebaseApp();
+    refreshInstanceHeaders(this.getToken);
   },
 };
 </script>

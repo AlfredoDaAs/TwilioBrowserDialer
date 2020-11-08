@@ -39,4 +39,9 @@ const getInstance = () => {
     return axiosInstance
 }
 
+export const refreshInstanceHeaders = (token) => {
+    //axiosInstance.defaults.headers.common['authorization'] = `Bearer ${token}`
+    Object.assign(axiosInstance.defaults, {headers: {authorization: `Bearer ${token}`}});
+}
+
 export default getInstance()
