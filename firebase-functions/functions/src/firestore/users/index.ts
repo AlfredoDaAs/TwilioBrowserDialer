@@ -10,7 +10,9 @@ class Collection extends AbstractCollection {
         picture: null,
         isAdmin: false,
         uid: null,
-        metadata: null
+        twilio: {
+            number: null
+        }
     }
 
     public async findByEmail (email:string): Promise<any> {
