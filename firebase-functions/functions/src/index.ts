@@ -31,4 +31,9 @@ app.use('/token', tokenCrud);
 app.use('/voice', voiceCrud);
 app.use('/users', usersCrud);
 
+app.use(function(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
+    console.error(err.stack);
+    res.status(500).send(err.message);
+});
+
 export const api = functions.https.onRequest(app);
