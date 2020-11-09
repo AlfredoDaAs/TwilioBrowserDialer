@@ -4,7 +4,7 @@ import { mapGetters } from 'vuex'
 
 export default {
     name: 'Header',
-    computed: mapGetters(['getName']),
+    computed: mapGetters(['getName', 'isAdmin']),
     methods: {
         doLogout() {
             firebase.auth().signOut()
@@ -27,7 +27,7 @@ export default {
             <b-collapse is-nav>
                 <!-- right content -->
                 <b-navbar-nav class="ml-auto">
-                    <b-nav-item to="users">
+                    <b-nav-item to="users" v-if="isAdmin">
                         Users
                     </b-nav-item>
                     <b-nav-item to="calls">
