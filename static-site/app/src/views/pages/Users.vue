@@ -1,9 +1,13 @@
 <script>
 import axios from '../../axios'
 import moment from 'moment'
+import UserCreateForm from '../../components/UserCreateForm'
 
 export default {
     name: 'Users',
+    components: {
+        UserCreateForm
+    },
     data() {
         return {
             usersList: [],
@@ -62,6 +66,9 @@ export default {
         },
         formatDate(value) {
             return moment(value).format('MMMM Do YYYY, h:mm:ss a')
+        },
+        userCreated() {
+            this.getUsers()
         }
     },
     created() {
@@ -78,7 +85,7 @@ export default {
             </div>
             <b-collapse id="create-user">
                 <b-card>
-                    create user form
+                    <user-create-form @onSubmitted="userCreated" />
                 </b-card>
             </b-collapse>
         </div>
