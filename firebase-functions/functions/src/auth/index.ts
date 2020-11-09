@@ -19,47 +19,43 @@ router.post('/', async (req: express.Request, res: express.Response) => {
         const decodedIdToken = await verifyToken(token)
 
         if(!decodedIdToken.email_verified) {
-            res.json({
+            res.status(500).json({
                 status: 'error',
                 message: 'Google email is not verified'
             })
             return;
         }
 
+        // getting user registered by admin
         let user = await User.findByEmail(decodedIdToken.email as string)
 
-        if(!user) {
-            const id = await User.createOne({
+        if(user) {
+            // updating data with decoded google information
+            await User.updateOne(user.id, {
                 name: decodedIdToken.name,
                 email: decodedIdToken.email,
                 picture: decodedIdToken.picture,
                 uid: decodedIdToken.uid
             })
 
-            if(!id) {
-                res.json({
-                    status: 'error',
-                    message: 'User could not be created'
-                })
-                return;
-            }
+            user = await User.readOne(user.id)
 
-            user = await User.readOne(id)
+            const jwtToken = jwt.sign({ name: user.name, email: user.email, isAdmin: user.isAdmin }, functions.config().jwt.key, { expiresIn: "1d" })
+
+            res.json({
+                status: 'ok',
+                token: jwtToken,
+                name: user.name,
+                email: user.email,
+                isAdmin: user.isAdmin
+            })
         }
-
-        const jwtToken = jwt.sign({ name: user.name, email: user.email, isAdmin: user.isAdmin }, functions.config().jwt.key, { expiresIn: "1d" })
-
-        res.json({
-            status: 'ok',
-            token: jwtToken,
-            name: user.name,
-            email: user.email,
-            isAdmin: user.isAdmin
-        })
+        else {
+            res.sendStatus(403)
+            return;
+        }
     } catch (error) {
-        console.log('error', error);
-        
-        res.json(error.message)
+        throw new Error(error);
     }
 })
 
