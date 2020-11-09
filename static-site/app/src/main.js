@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import VueGoodTablePlugin from 'vue-good-table';
+import Vuelidate from 'vuelidate'
 
 import App from './App.vue'
 import router from './router'
@@ -10,6 +11,8 @@ import '@/assets/scss/custom.scss'
 
 // import the styles
 import 'vue-good-table/dist/vue-good-table.css'
+
+Vue.use(Vuelidate)
 
 Vue.use(VueGoodTablePlugin);
 
