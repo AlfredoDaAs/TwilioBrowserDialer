@@ -34,6 +34,7 @@ const mutations = {
         state.token = payload.token
         state.name = payload.name
         state.email = payload.email
+        state.isAdmin = payload.isAdmin
     },
     loginError: (state, error) => {
         state.error = error
@@ -54,8 +55,12 @@ const getters = {
         return state.token !== null && state.token !== '' ? true : false;
     },
 
+    isAdmin: (state) => {
+        return state.isAdmin ? true : false;
+    },
+
     getName: (state) => {
-        return state.name.length > 0 ? `Welcome ${state.name}!` : 'User';
+        return state.name && state.name.length > 0 ? `Welcome ${state.name}!` : 'User';
     }
 }
 
