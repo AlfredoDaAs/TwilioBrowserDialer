@@ -6,14 +6,10 @@ export default {
     name: 'Header',
     computed: mapGetters(['getName', 'isAdmin']),
     methods: {
-        doLogout() {
-            firebase.auth().signOut()
-            .then(() => {
-                return this.$store.dispatch('logout')
-            })
-            .then(() => {
-                this.$router.push('/login')
-            })
+        async doLogout() {
+            await firebase.auth().signOut()
+            await this.$store.dispatch('logout')
+            this.$router.push('/login')
         }
     }
 }
