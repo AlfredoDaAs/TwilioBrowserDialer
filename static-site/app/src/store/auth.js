@@ -1,7 +1,10 @@
 import axios from '../axios'
+import firebase from "firebase/app";
+import { isOnlineForDatabase, isOfflineForDatabase } from '../firebase'
 
 const state = {
     token: null,
+    id: null,
     name: null,
     email: null,
     error: null,
@@ -17,6 +20,10 @@ const actions = {
 
             const data = response.data
             if(data && data.status === 'ok') {
+                await firebase.database().ref(`users/${data.id}`).set({
+                    ...isOnlineForDatabase,
+                    name: data.name
+                })
                 commit('loginSuccess', data)
             }
         } catch (error) {
@@ -24,7 +31,8 @@ const actions = {
         }
     },
 
-    logout: ({ commit }) => {
+    logout: async ({ commit, state }) => {
+        await firebase.database().ref(`users/${state.id}`).update(isOfflineForDatabase)
         commit('logout')
     }
 }
@@ -32,6 +40,7 @@ const actions = {
 const mutations = {
     loginSuccess: (state, payload) => {
         state.token = payload.token
+        state.id = payload.id
         state.name = payload.name
         state.email = payload.email
         state.isAdmin = payload.isAdmin
@@ -41,14 +50,20 @@ const mutations = {
     },
     logout: (state) => {
         state.token = null
+        state.id = null
         state.name = null
         state.email = null
+        state.isAdmin = false
     }
 }
 
 const getters = {
     getToken: (state) => {
         return state.token ? state.token : '';
+    },
+
+    getUserId: (state) => {
+        return state.id ? state.id : ''
     },
 
     isAuthenticated: (state) => {
