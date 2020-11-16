@@ -13,6 +13,7 @@ const getInstance = () => {
         }
         else {
             // production
+            // update to your api endpoint from your cloud functions
             baseURL = 'http://localhost:5000/twiliobrowserdialer/us-central1/api'
         }
 
