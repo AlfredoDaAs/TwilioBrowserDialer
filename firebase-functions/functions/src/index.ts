@@ -25,10 +25,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/auth', authValidation);
 
+// twilio TwiML voice endpoint
+app.use('/voice', voiceCrud);
+
 // from here down app is protected by token
 app.use(apiValidation);
 app.use('/token', tokenCrud);
-app.use('/voice', voiceCrud);
 app.use('/users', usersCrud);
 
 app.use(function(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
