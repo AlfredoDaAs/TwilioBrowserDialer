@@ -5,16 +5,8 @@ import "firebase/database";
 
 let firebaseInstance
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBsBC86B_jaYoZaTYq3Ox7P_000wnDBLHg",
-    authDomain: "twiliobrowserdialer.firebaseapp.com",
-    databaseURL: "https://twiliobrowserdialer.firebaseio.com",
-    projectId: "twiliobrowserdialer",
-    storageBucket: "twiliobrowserdialer.appspot.com",
-    messagingSenderId: "1016261872570",
-    appId: "1:1016261872570:web:d62d4c963aba1b362f6b83",
-    measurementId: "G-Q13CDVRWQE"
-};
+// you should add here your firebase configurations from your firebase project
+const firebaseConfig = {};
 
 export const isOfflineForDatabase = {
     status: 'offline',
