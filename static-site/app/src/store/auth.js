@@ -20,7 +20,7 @@ const actions = {
 
             const data = response.data
             if(data && data.status === 'ok') {
-                await firebase.database().ref(`users/${data.id}`).set({
+                await firebase.database().ref(`users/${data.id}`).update({
                     ...isOnlineForDatabase,
                     name: data.name
                 })
