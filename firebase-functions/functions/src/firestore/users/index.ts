@@ -5,14 +5,14 @@ const collectionName = 'users'
 
 class Collection extends AbstractCollection {
     public defaultValues: any = {
-        name: null,
-        email: null,
-        picture: null,
-        isAdmin: false,
         uid: null,
-        twilio: {
-            number: null
-        }
+        name: null,
+        lastName: null,
+        email: null,
+        phoneNumber: null,
+        deparment: null,
+        picture: null,
+        isAdmin: false
     }
 
     public async findByEmail (email:string): Promise<any> {

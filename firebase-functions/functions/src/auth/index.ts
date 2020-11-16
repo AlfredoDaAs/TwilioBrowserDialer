@@ -19,7 +19,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
         const decodedIdToken = await verifyToken(token)
 
         if(!decodedIdToken.email_verified) {
-            res.status(500).json({
+            res.status(403).json({
                 status: 'error',
                 message: 'Google email is not verified'
             })
@@ -32,7 +32,6 @@ router.post('/', async (req: express.Request, res: express.Response) => {
         if(user) {
             // updating data with decoded google information
             await User.updateOne(user.id, {
-                name: decodedIdToken.name,
                 email: decodedIdToken.email,
                 picture: decodedIdToken.picture,
                 uid: decodedIdToken.uid
@@ -40,7 +39,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
 
             user = await User.readOne(user.id)
 
-            const jwtToken = jwt.sign({ id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin }, functions.config().jwt.key, { expiresIn: "1d" })
+            const jwtToken = jwt.sign({ id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin }, functions.config().jwt.key, { expiresIn: functions.config().jwt.expires })
 
             res.json({
                 status: 'ok',
