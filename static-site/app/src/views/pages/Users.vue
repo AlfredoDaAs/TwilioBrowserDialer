@@ -3,6 +3,7 @@ import axios from '../../axios'
 import moment from 'moment'
 import UserCreateForm from '../../components/UserCreateForm'
 import UserUpdateForm from '../../components/UserUpdateForm'
+import UserDeleteForm from '../../components/UserDeleteForm'
 import { handleError } from '../../handleErrors'
 
 export default {
@@ -10,12 +11,14 @@ export default {
     components: {
         UserCreateForm,
         UserUpdateForm,
+        UserDeleteForm
     },
     data() {
         return {
             usersList: [],
             userId: '',
             showModal: false,
+            showDelModal: false,
             columns: [
                 {
                     label: 'Id',
@@ -97,6 +100,17 @@ export default {
         editUser(id) {
             this.userId = id
             this.showModal = true
+        },
+        deleteUser(id) {
+          this.userId = id
+          this.showDelModal = true
+        },
+        userDeleted() {
+          this.getUsers()
+        },
+        cancelDelete() {
+          this.showDelModal = false
+          this.userId = ''
         }
     },
     created() {
@@ -133,6 +147,9 @@ export default {
                             <b-button @click="editUser(props.row.id)" variant="link">
                                 <b-icon-pencil></b-icon-pencil>
                             </b-button>
+                            <b-button @click="deleteUser(props.row.id)" variant="link">
+                              <b-icon-trash></b-icon-trash>
+                            </b-button>
                         </span>
                         <span v-else>
                             {{props.formattedRow[props.column.field]}}
@@ -142,5 +159,6 @@ export default {
             </div>
         </div>
         <user-update-form :id="userId" :show="showModal" @onSubmitted="userUpdated" @onClose="userUpdated" />
+        <user-delete-form :id="userId" :show="showDelModal" @onDeleted="userDeleted" @onClose="cancelDelete"/>
     </b-container>
 </template>
