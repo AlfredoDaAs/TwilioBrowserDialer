@@ -15,7 +15,7 @@ export default {
                 items.forEach(item => {
                     const key = item.key
                     const data = item.val()
-                    if(key === this.getUserId && data.status === 'online') {
+                    if(key !== this.getUserId && data.status === 'online') {
                         usersList.push({
                             key: key,
                             name: data.name,
