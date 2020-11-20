@@ -62,7 +62,7 @@ export default {
       }
     },
     async getToken() {
-      const result = await axios.get("/token");
+      const result = await axios.get("/token", { id: this.getUserId });
 
       if (result.data) {
         const token = result.data.token;
