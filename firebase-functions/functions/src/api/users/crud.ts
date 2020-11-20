@@ -4,7 +4,7 @@ import User from '../../firestore/users'
 
 const router = express.Router()
 
-router.get('/:id?', async (req, res) => {
+router.get('/:id?', async (req, res, next) => {
     try {
         const id = req.params.id
         if(id) {
@@ -18,23 +18,29 @@ router.get('/:id?', async (req, res) => {
             res.json(users)
         }
     } catch (error) {
-        throw new Error(error);
+        next(error)
     }
 })
 
-router.post('/', adminMiddleware, async (req, res) => {
+router.post('/', adminMiddleware, async (req, res, next) => {
     try {
         const body = req.body
 
         if(!body.name
-            || !body.lastname
+            || !body.lastName
             || !body.email) {
-            throw new Error("Missing required fields (name, lastname, email)");
+            return next(new Error('Missing required fields (name, lastname, email)'))
+        }
+
+        const user = await User.findByEmail(body.email)
+
+        if(user) {
+            return next(new Error('User already exists'))
         }
 
         const result = await User.createOne({
             name: body.name,
-            lastName: body.lastname,
+            lastName: body.lastName,
             email: body.email,
             phoneNumber: body.phoneNumber ? body.phoneNumber : null,
             deparment: body.deparment ? body.deparment : null
@@ -42,11 +48,11 @@ router.post('/', adminMiddleware, async (req, res) => {
 
         res.json(result)
     } catch (error) {
-        throw new Error(error);
+        next(error)
     }
 })
 
-router.put('/:id', adminMiddleware, async (req, res) => {
+router.put('/:id', adminMiddleware, async (req, res, next) => {
     try {
         const body = req.body
         const id = req.params.id
@@ -60,12 +66,23 @@ router.put('/:id', adminMiddleware, async (req, res) => {
 
         res.json(result)
     } catch (error) {
-        throw new Error(error);
+        next(error)
     }
 })
 
-/* router.delete('/:id', adminMiddleware, (req, res) => {
+router.delete('/:id', adminMiddleware, async (req, res, next) => {
+  try {
+    const id = req.params.id
 
-}) */
+    if(!id) {
+      next(new Error('missing user id'));
+    }
+
+    const result = await User.deleteOne(id);
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+})
 
 export default router
