@@ -28,6 +28,14 @@ export const apiValidation = (req: express.Request, res: express.Response, next:
 
             req.decoded = decoded
 
+            if(!decoded.email) {
+                return res.status(403)
+                    .json({
+                        success: false,
+                        message: 'No email account found'
+                    })
+            }
+
             const user = await User.findByEmail(decoded.email)
 
             if(!user) {
