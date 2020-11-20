@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "twiliobrowserdialer"
+    "default": "twiliobrowserdialer",
+    "staging": "twiliodemo-dc2e3"
   }
 }
