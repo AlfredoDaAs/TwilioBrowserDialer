@@ -35,7 +35,7 @@ app.use('/users', usersCrud);
 
 app.use(function(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
     console.error(err.stack);
-    res.status(500).send(err.message);
+    res.status(500).send({ error: err.message });
 });
 
 export const api = functions.https.onRequest(app);
