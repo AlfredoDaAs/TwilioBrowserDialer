@@ -10,8 +10,7 @@ export default {
         lastName: '',
         email: '',
         phoneNumber: '',
-        deparment:  '',
-        modal: false,
+        deparment:  ''
     }),
     props: {
         id: {
