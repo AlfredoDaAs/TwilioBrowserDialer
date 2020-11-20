@@ -4,7 +4,7 @@ import * as twilio from 'twilio'
 
 const router = express.Router()
 
-const ClientCapability = twilio.jwt.ClientCapability;
+const ClientCapability = twilio.jwt.ClientCapability
 
 // Generate a Twilio Client capability token
 router.get('/', (request, response) => {
@@ -14,6 +14,7 @@ router.get('/', (request, response) => {
         ttl: 120
     })
 
+    capability.addScope(new ClientCapability.IncomingClientScope(request.body.name))
     capability.addScope(
         new ClientCapability.OutgoingClientScope({
             applicationSid: functions.config().twilio.applicationsid
