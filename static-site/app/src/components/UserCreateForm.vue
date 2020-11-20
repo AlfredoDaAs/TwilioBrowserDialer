@@ -7,13 +7,13 @@ export default {
     name: 'UserCreateForm',
     data: () => ({
         name: '',
-        lastname: '',
+        lastName: '',
         email: '',
         phoneNumber: '',
         deparment:  '',
     }),
     validations: {
-        lastname: {
+        lastName: {
             required
         },
         name: {
@@ -37,7 +37,7 @@ export default {
                 else {
                     const result = await axios.post('/users', {
                         name: this.name,
-                        lastname: this.lastname,
+                        lastName: this.lastName,
                         email: this.email,
                         phoneNumber: this.phoneNumber,
                         deparment: this.deparment
@@ -57,7 +57,7 @@ export default {
             this.email = ''
             this.phoneNumber = ''
             this.name = ''
-            this.lastname = ''
+            this.lastName = ''
             this.deparment = ''
 
             this.$nextTick(() => {
@@ -81,10 +81,10 @@ export default {
             </b-col>
             <b-col md="6" sm="12">
                 <b-form-input
-                    v-model="lastname"
+                    v-model="lastName"
                     type="text"
                     placeholder="Enter lastname"
-                    :state="$v.lastname.$dirty ? !$v.lastname.$error : null"
+                    :state="$v.lastName.$dirty ? !$v.lastName.$error : null"
                 ></b-form-input>
             </b-col>
         </b-row>
