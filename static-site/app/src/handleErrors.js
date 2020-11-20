@@ -7,7 +7,15 @@ export const handleError = (error, comp, variant) =>  {
     }
     else {
         // toast message
-        comp.$bvToast.toast(error.message, {
+        let message = ''
+        if(error.response && error.response.status === 500) {
+            message = error.response.data.error
+        }
+        else {
+            message = error.message
+        }
+
+        comp.$bvToast.toast(message, {
             title: 'Message',
             variant: variant,
             autoHideDelay: 5000,
