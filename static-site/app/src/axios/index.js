@@ -4,21 +4,10 @@ let axiosInstance = null
 
 const getInstance = () => {
     if(!axiosInstance) {
-        let baseURL = ''
         const params = {}
 
-        if(process.env.NODE_ENV === 'development') {
-            // baseURL with token query
-            baseURL = 'http://localhost:5000/twiliobrowserdialer/us-central1/api'
-        }
-        else {
-            // production
-            // update to your api endpoint from your cloud functions
-            baseURL = 'http://localhost:5000/twiliobrowserdialer/us-central1/api'
-        }
-
         axiosInstance = axios.create({
-            baseURL: baseURL,
+            baseURL: process.env.VUE_APP_BASIC_URL,
             headers: {},
             params
         })
