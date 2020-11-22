@@ -11,6 +11,8 @@ import { apiValidation } from './api'
 import tokenCrud from './api/token/crud'
 import voiceCrud from './api/voice/crud'
 import usersCrud from './api/users/crud'
+import deparmentsCrud from './api/deparments/crud'
+import callsCrud from './api/calls/crud'
 
 //initialize firebase app
 initializeFirebase();
@@ -32,6 +34,8 @@ app.use('/voice', voiceCrud);
 app.use(apiValidation);
 app.use('/token', tokenCrud);
 app.use('/users', usersCrud);
+app.use('/deparments', deparmentsCrud);
+app.use('/calls', callsCrud);
 
 app.use(function(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
     console.error(err.stack);
