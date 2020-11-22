@@ -119,6 +119,17 @@ abstract class AbstractCollection {
         }
     }
 
+    public async hardDelete(id: string): Promise<boolean> {
+      try {
+        await this.collection.doc(id).delete();
+
+        return true
+      } catch (e) {
+        console.error(e)
+        return throwDatabaseFailure('deletedAt failed: ' + e.message)
+      }
+    }
+
     public async deleteOne(id: string): Promise<boolean> {
         try {
             await this.collection.doc(id).update({deletedAt: Date.now()})

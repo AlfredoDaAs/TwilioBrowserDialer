@@ -5,6 +5,7 @@ import UserCreateForm from '../../components/UserCreateForm'
 import UserUpdateForm from '../../components/UserUpdateForm'
 import UserDeleteForm from '../../components/UserDeleteForm'
 import { handleError } from '../../handleErrors'
+import { mapGetters } from "vuex";
 
 export default {
     name: 'Users',
@@ -13,11 +14,12 @@ export default {
         UserUpdateForm,
         UserDeleteForm
     },
+    computed: mapGetters(["getUserId", "isAdmin"]),
     data() {
         return {
             usersList: [],
             userId: '',
-            showModal: false,
+            showEditModal: false,
             showDelModal: false,
             columns: [
                 {
@@ -94,23 +96,30 @@ export default {
             this.getUsers()
         },
         userUpdated() {
-            this.showModal = false
+            this.showEditModal = false
             this.userId = ''
         },
         editUser(id) {
             this.userId = id
-            this.showModal = true
+            this.showEditModal = true
         },
         deleteUser(id) {
           this.userId = id
-          this.showDelModal = true
+          this.$nextTick(() => {
+            this.showDelModal = true
+          })
         },
         userDeleted() {
-          this.getUsers()
+          this.cancelDelete();
+          this.$nextTick(() => {
+            this.getUsers();
+          });
         },
         cancelDelete() {
           this.showDelModal = false
-          this.userId = ''
+          this.$nextTick(() => {
+            this.userId = ''
+          })
         }
     },
     created() {
@@ -147,7 +156,7 @@ export default {
                             <b-button @click="editUser(props.row.id)" variant="link">
                                 <b-icon-pencil></b-icon-pencil>
                             </b-button>
-                            <b-button @click="deleteUser(props.row.id)" variant="link">
+                            <b-button v-if="props.row.id !== getUserId" @click="deleteUser(props.row.id)" variant="link">
                               <b-icon-trash></b-icon-trash>
                             </b-button>
                         </span>
@@ -158,7 +167,7 @@ export default {
                 </vue-good-table>
             </div>
         </div>
-        <user-update-form :id="userId" :show="showModal" @onSubmitted="userUpdated" @onClose="userUpdated" />
+        <user-update-form :id="userId" :show="showEditModal" @onSubmitted="userUpdated" @onClose="userUpdated" />
         <user-delete-form :id="userId" :show="showDelModal" @onDeleted="userDeleted" @onClose="cancelDelete"/>
     </b-container>
 </template>

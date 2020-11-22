@@ -60,8 +60,15 @@ export default {
         handleError(error, this, 'danger');
       }
     },
+    onChange(visible) {
+      if(!visible) {
+        this.cancel();
+      }
+    },
     cancel(e) {
-      e.preventDefault();
+      if(e) {
+        e.preventDefault();
+      }      
 
       this.$emit('onClose')
     },
@@ -71,12 +78,14 @@ export default {
 
 <template>
   <b-modal
+    :visible="show"
     title="Delete User"
     ok-title="Delete"
     ok-variant="outline-danger"
     @ok="handleDelete"
     cancel-variant="outline-secondary"
     @cancel="cancel"
+    @change="onChange"
   >
     <b-form>
       <p>Are you sure you want to delete {{`${name} ${lastName}`}}?</p>

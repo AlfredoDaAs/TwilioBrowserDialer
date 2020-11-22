@@ -75,13 +75,19 @@ router.delete('/:id', adminMiddleware, async (req, res, next) => {
     const id = req.params.id
 
     if(!id) {
-      next(new Error('missing user id'));
+      return next(new Error('missing user id'));
     }
 
-    const result = await User.deleteOne(id);
-    res.json(result)
+    const user = await User.readOne(id);
+
+    if(user.isAdmin) {
+      return next(new Error('Cannot delete admin user'));
+    }
+
+    const result = await User.hardDelete(id);
+    return res.json(result)
   } catch (error) {
-    next(error)
+    return next(error)
   }
 })
 
