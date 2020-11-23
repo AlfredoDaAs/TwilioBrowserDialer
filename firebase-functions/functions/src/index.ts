@@ -8,8 +8,11 @@ import { initializeFirebase } from './firebase'
 import authValidation from './auth'
 import { apiValidation } from './api'
 
-import tokenCrud from './api/token/crud'
-import voiceCrud from './api/voice/crud'
+// twilio api modules
+import tokenCrud from './api/twilio/token'
+import voiceCrud from './api/twilio/voice'
+import numbersCrud from './api/twilio/numbers'
+
 import usersCrud from './api/users/crud'
 import deparmentsCrud from './api/deparments/crud'
 import callsCrud from './api/calls/crud'
@@ -34,6 +37,7 @@ app.use('/voice', voiceCrud);
 app.use(apiValidation);
 app.use('/token', tokenCrud);
 app.use('/users', usersCrud);
+app.use('/numbers', numbersCrud);
 app.use('/deparments', deparmentsCrud);
 app.use('/calls', callsCrud);
 
