@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { adminMiddleware } from '../../middlewares/admin'
-import User from '../../firestore/users'
+import users from '../../firestore/users'
 
 const router = express.Router()
 
@@ -8,14 +8,14 @@ router.get('/:id?', async (req, res, next) => {
     try {
         const id = req.params.id
         if(id) {
-            const user = await User.readOne(id)
+            const user = await users.readOne(id)
 
             res.json(user)
         }
         else {
-            const users = await User.getAllUsers()
+            const results = await users.getAllUsers()
 
-            res.json(users)
+            res.json(results)
         }
     } catch (error) {
         next(error)
@@ -32,13 +32,13 @@ router.post('/', adminMiddleware, async (req, res, next) => {
             return next(new Error('Missing required fields (name, lastname, email)'))
         }
 
-        const user = await User.findByEmail(body.email)
+        const user = await users.findByEmail(body.email)
 
         if(user) {
             return next(new Error('User already exists'))
         }
 
-        const result = await User.createOne({
+        const result = await users.createOne({
             name: body.name,
             lastName: body.lastName,
             email: body.email,
@@ -57,7 +57,7 @@ router.put('/:id', adminMiddleware, async (req, res, next) => {
         const body = req.body
         const id = req.params.id
 
-        const result = await User.updateOne(id, {
+        const result = await users.updateOne(id, {
             phoneNumber: body.phoneNumber,
             deparment: body.deparment,
             name: body.name,
@@ -78,13 +78,13 @@ router.delete('/:id', adminMiddleware, async (req, res, next) => {
       return next(new Error('missing user id'));
     }
 
-    const user = await User.readOne(id);
+    const user = await users.readOne(id);
 
     if(user.isAdmin) {
       return next(new Error('Cannot delete admin user'));
     }
 
-    const result = await User.hardDelete(id);
+    const result = await users.hardDelete(id);
     return res.json(result)
   } catch (error) {
     return next(error)
