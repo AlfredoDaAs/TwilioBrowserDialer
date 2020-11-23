@@ -23,6 +23,11 @@ const routes = [
                     is_admin: true // protects admin views from normal users
                 },
                 component: () => import('../views/pages/Users')
+            },
+            {
+              path: '/numbers',
+              name: 'numbers',
+              component: () => import('../views/pages/Numbers')
             }
         ]
     },
