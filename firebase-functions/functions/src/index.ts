@@ -38,7 +38,7 @@ app.use(apiValidation);
 app.use('/token', tokenCrud);
 app.use('/users', usersCrud);
 app.use('/numbers', numbersCrud);
-app.use('/deparments', deparmentsCrud);
+app.use('/departments', deparmentsCrud);
 app.use('/calls', callsCrud);
 
 app.use(function(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
