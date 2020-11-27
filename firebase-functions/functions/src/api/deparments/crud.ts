@@ -1,5 +1,6 @@
 import * as express from 'express'
-import deparments from '../../firestore/departments'
+import departments from '../../firestore/departments'
+import users from '../../firestore/users'
 
 const router = express.Router()
 
@@ -7,13 +8,13 @@ router.get('/:id?', async (req, res, next) => {
   try {
     const { id } = req.params
 
-    if(id) {
-      const deparment = await deparments.readOne(id);
+    if (id) {
+      const deparment = await departments.readOne(id);
 
       return res.json(deparment);
     }
 
-    const results = await deparments.getDeparments();
+    const results = await departments.getDeparments();
 
     return res.json(results)
   } catch (error) {
@@ -25,11 +26,11 @@ router.post('/', async (req, res, next) => {
   try {
     const { body } = req
 
-    if(!body.name) {
+    if (!body.name) {
       return next(new Error('Missing required fields'));
     }
 
-    const result = await deparments.createOne({
+    const result = await departments.createOne({
       name: body.name
     })
 
@@ -44,21 +45,21 @@ router.put('/:id', async (req, res, next) => {
     const { id } = req.params
     const { body } = req
 
-    if(!id || id === undefined || id === null) {
+    if (!id || id === undefined || id === null) {
       return next(new Error('Missing id parameter'))
     }
 
-    if(!body.name) {
+    if (!body.name) {
       return next(new Error('Missing required fields'));
     }
 
-    const deparment = await deparments.readOne(id);
+    const deparment = await departments.readOne(id);
 
-    if(!deparment) {
+    if (!deparment) {
       return next(new Error('No deparment was found'))
     }
 
-    const result = await deparments.updateOne(id, {
+    const result = await departments.updateOne(id, {
       name: body.name
     })
 
@@ -72,13 +73,25 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params
 
-    if(!id || id === undefined || id === null) {
+    if (!id || id === undefined || id === null) {
       return next(new Error('Missing id parameter'))
     }
 
-    return await deparments.hardDelete(id);
+    const department = await departments.readOne(id);
+
+    if (!department) {
+      return next(new Error('Department not found'));
+    }
+
+    const deleted = await departments.hardDelete(id);
+
+    if (deleted) {
+      await users.removeUsersDepartment(department.name);
+    }
+
+    return res.json(true);
   } catch (error) {
-    next(error)
+    return next(error);
   }
 })
 
