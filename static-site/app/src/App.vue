@@ -16,6 +16,9 @@ export default {
   created() {
     initFirebaseApp();
     refreshInstanceHeaders(this.getToken);
+    this.$nextTick(() => {
+      this.$store.dispatch('loadContent');
+    });
   },
 };
 </script>

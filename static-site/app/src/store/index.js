@@ -5,6 +5,7 @@ import * as Cookies from "js-cookie";
 
 import token from './token'
 import auth from './auth'
+import data from './data'
 
 Vue.use(Vuex)
 
@@ -20,6 +21,7 @@ export default new Vuex.Store({
     })],
     modules: {
         token,
-        auth
+        auth,
+        data
     }
 })
