@@ -27,7 +27,7 @@ export default {
             return;
         }
 
-        const result = await axios.post('/deparments', {
+        const result = await axios.post('/departments', {
           name: this.name
         })
 

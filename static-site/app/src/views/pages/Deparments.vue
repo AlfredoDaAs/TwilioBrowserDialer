@@ -84,7 +84,7 @@ export default {
     <b-card title="Departments">
       <b-row>
         <b-col md="6">
-          <deparments-create-form @onCreate="this.loadDepartments()" />
+          <deparments-create-form @onCreate="loadDepartments()" />
         </b-col>
       </b-row>
       <vue-good-table
