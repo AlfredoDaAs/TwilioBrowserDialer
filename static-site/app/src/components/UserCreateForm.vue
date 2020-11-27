@@ -2,6 +2,7 @@
 import axios from '../axios'
 import { required, email, numeric, minValue } from 'vuelidate/lib/validators'
 import { handleError } from '../handleErrors'
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'UserCreateForm',
@@ -10,8 +11,17 @@ export default {
         lastName: '',
         email: '',
         phoneNumber: '',
-        deparment:  '',
+        selectedDepts:  [],
     }),
+    computed: {
+      ...mapGetters(["getDepartments"]),
+      departments() {
+        return this.getDepartments.map(dep => ({
+          value: dep.name.trim().toLowerCase().replace(' ', '_'),
+          text: dep.name
+        }));
+      }
+    },
     validations: {
         lastName: {
             required
@@ -23,7 +33,7 @@ export default {
             required,
             email
         },
-        deparment: {
+        selectedDepts: {
             required
         }
     },
@@ -40,7 +50,7 @@ export default {
                         lastName: this.lastName,
                         email: this.email,
                         phoneNumber: this.phoneNumber,
-                        deparment: this.deparment
+                        departments: this.selectedDepts
                     })
 
                     if(result.data) {
@@ -58,7 +68,7 @@ export default {
             this.phoneNumber = ''
             this.name = ''
             this.lastName = ''
-            this.deparment = ''
+            this.selectedDepts = []
 
             this.$nextTick(() => {
                 this.$v.$reset();
@@ -108,13 +118,21 @@ export default {
         </b-row>
         <b-row class="pt-3">
             <b-col md="6" sm="12">
-                <b-form-input
-                    min="10"
-                    v-model="deparment"
-                    type="text"
-                    placeholder="Enter deparment"
-                    :state="$v.deparment.$dirty ? !$v.deparment.$error : null"
-                ></b-form-input>
+              <b-form-group
+                id="depts-group-1"
+                description="select all departments you want for this User"
+                label="Select Departments"
+                label-for="depts-select"
+              >
+               <b-form-select
+                  id="depts-select"
+                  v-model="selectedDepts"
+                  :options="departments"
+                  multiple
+                  :select-size="5"
+                  :state="$v.selectedDepts.$dirty ? !$v.selectedDepts.$error : null"
+                ></b-form-select>
+              </b-form-group>
             </b-col>
         </b-row>
 

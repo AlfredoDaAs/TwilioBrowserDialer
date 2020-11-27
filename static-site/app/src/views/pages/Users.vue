@@ -17,6 +17,7 @@ export default {
   computed: mapGetters(["getUserId", "isAdmin"]),
   data() {
     return {
+      departments: [],
       usersList: [],
       userId: "",
       showEditModal: false,
@@ -34,6 +35,11 @@ export default {
         {
           label: "Email",
           field: "email",
+        },
+        {
+          label: "Departments",
+          field: "departments",
+          formatFn: this.formatDepts,
         },
         {
           label: "Phone Number",
@@ -91,6 +97,18 @@ export default {
     },
     formatDate(value) {
       return moment(value).format("MMMM Do YYYY, h:mm:ss a");
+    },
+    formatDepts(value) {
+      let depts = ""
+      const size = value.length;
+      value.forEach((dept, i) => {
+        if(i < (size - 1)){
+          depts += `${dept}, `
+        } else {
+          depts += `${dept}`
+        }
+      })
+      return depts
     },
     userCreated() {
       this.getUsers();

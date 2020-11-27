@@ -2,7 +2,8 @@
 import axios from "../axios";
 import { required, email, numeric, minValue } from "vuelidate/lib/validators";
 import { handleError } from "../handleErrors";
-import { log } from 'util';
+import { log } from "util";
+import { mapGetters } from 'vuex'
 
 export default {
   name: "UserUpdateForm",
@@ -11,8 +12,17 @@ export default {
     lastName: "",
     email: "",
     phoneNumber: "",
-    deparment: ""
+    selectedDepts: [],
   }),
+  computed: {
+    ...mapGetters(["getDepartments"]),
+    departments() {
+      return this.getDepartments.map(dep => ({
+        value: dep.name.trim().toLowerCase().replace(' ', '_'),
+        text: dep.name
+      }));
+    }
+  },
   props: {
     id: {
       type: String,
@@ -33,7 +43,7 @@ export default {
     phoneNumber: {
       numeric,
     },
-    deparment: {
+    selectedDepts: {
       required,
     },
   },
@@ -42,7 +52,7 @@ export default {
       if (newVal !== oldVal) {
         this.loadUser(newVal);
       }
-    }
+    },
   },
   methods: {
     async loadUser(id) {
@@ -57,7 +67,7 @@ export default {
             this.lastName = user.lastName;
             this.email = user.email;
             this.phoneNumber = user.phoneNumber;
-            this.deparment = user.deparment;
+            this.selectedDepts = user.departments;
           }
         }
       } catch (error) {
@@ -78,7 +88,7 @@ export default {
             name: this.name,
             lastName: this.lastName,
             phoneNumber: this.phoneNumber,
-            deparment: this.deparment,
+            departments: this.selectedDepts,
           });
 
           if (result.data) {
@@ -90,18 +100,18 @@ export default {
       }
     },
     onChange(visible) {
-      if(!visible) {
+      if (!visible) {
         this.close();
       }
     },
     close(e) {
-      if(e) {
+      if (e) {
         e.preventDefault();
       }
 
       this.$emit("onClose");
     },
-  }
+  },
 };
 </script>
 
@@ -140,14 +150,21 @@ export default {
     </b-row>
     <b-row class="pt-3">
       <b-col md="6" sm="12">
-        <b-form-input
-          min="10"
-          v-model="deparment"
-          type="text"
-          required
-          placeholder="Enter deparment"
-          :state="$v.deparment.$dirty ? !$v.deparment.$error : null"
-        ></b-form-input>
+        <b-form-group
+          id="depts-group-1"
+          description="select all departments you want for this User"
+          label="Select Departments"
+          label-for="depts-select"
+        >
+          <b-form-select
+            id="depts-select"
+            v-model="selectedDepts"
+            :options="departments"
+            multiple
+            :select-size="5"
+            :state="$v.selectedDepts.$dirty ? !$v.selectedDepts.$error : null"
+          ></b-form-select>
+        </b-form-group>
       </b-col>
       <b-col md="6" sm="12">
         <b-form-input
