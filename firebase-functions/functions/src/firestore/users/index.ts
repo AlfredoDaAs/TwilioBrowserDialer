@@ -10,9 +10,9 @@ class Collection extends AbstractCollection {
         lastName: null,
         email: null,
         phoneNumber: null,
-        deparment: null,
         picture: null,
-        isAdmin: false
+        isAdmin: false,
+        departments: []
     }
 
     public async findByEmail (email:string): Promise<any> {
