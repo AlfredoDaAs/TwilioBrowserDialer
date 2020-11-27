@@ -3,14 +3,18 @@ import axios from "../../axios";
 import moment from "moment";
 import DeparmentsCreateForm from "../../components/DeparmentsCreateForm";
 import { handleError } from "../../handleErrors";
+import DepartmentDeleteForm from '../../components/DepartmentDeleteForm';
 
 export default {
   name: "Deparments",
   components: {
     DeparmentsCreateForm,
+    DepartmentDeleteForm,
   },
   data() {
     return {
+      showDelModal: false,
+      department: null,
       departments: [],
       columns: [
         {
@@ -54,6 +58,18 @@ export default {
       } catch (error) {
         handleError(error, this, 'danger')
       }
+    },
+    handleDelete(department) {
+      this.department = department
+      this.showDelModal = true
+    },
+    onDelete() {
+      this.loadDepartments();
+      this.hideDelModal();
+    },
+    hideDelModal() {
+      this.showDelModal =  false
+      this.department = {}
     }
   },
   mounted() {
@@ -64,10 +80,11 @@ export default {
 
 <template>
   <b-container>
+    <department-delete-form :show="showDelModal" :department="department ? department : {}" @onDelete="onDelete" @onCancel="hideDelModal" />
     <b-card title="Departments">
       <b-row>
         <b-col md="6">
-          <deparments-create-form />
+          <deparments-create-form @onCreate="this.loadDepartments()" />
         </b-col>
       </b-row>
       <vue-good-table
@@ -79,6 +96,12 @@ export default {
       >
         <template slot="table-row" slot-scope="props">
           <span v-if="props.column.field == 'action'">
+            <b-button
+              @click="handleDelete(props.row)"
+              variant="link"
+            >
+              <b-icon-trash></b-icon-trash>
+            </b-button>
           </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
