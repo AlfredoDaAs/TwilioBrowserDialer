@@ -43,7 +43,7 @@ router.post('/', adminMiddleware, async (req, res, next) => {
             lastName: body.lastName,
             email: body.email,
             phoneNumber: body.phoneNumber ? body.phoneNumber : null,
-            deparment: body.deparment ? body.deparment : null
+            departments: body.departments.length > 0 ? body.departments : []
         })
 
         res.json(result)
@@ -59,7 +59,7 @@ router.put('/:id', adminMiddleware, async (req, res, next) => {
 
         const result = await users.updateOne(id, {
             phoneNumber: body.phoneNumber,
-            deparment: body.deparment,
+            departments: body.departments.length > 0 ? body.departments : [],
             name: body.name,
             lastName: body.lastName
         })
