@@ -32,7 +32,8 @@ export default {
         })
 
         if(result.data) {
-          handleMessage('Deparment was successfuly created', this, 'success')
+          handleMessage('Deparment was successfuly created', this, 'success');
+          this.$emit('onCreate');
           this.onReset();
         }
       } catch (error) {
