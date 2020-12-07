@@ -8,17 +8,17 @@ const router = express.Router()
 const ClientCapability = twilio.jwt.ClientCapability
 
 // Generate a Twilio Client capability token
-router.get('/', async (request, response, next) => {
-  const user = await users.readOne(request.body.id);
+router.get('/:id', async (request, response, next) => {
+  const user = await users.readOne(request.params.id);
 
   if(user) {
     const capability = new ClientCapability({
       accountSid: functions.config().twilio.accountsid,
       authToken: functions.config().twilio.authtoken,
-      ttl: 120
-    })
-  
-    capability.addScope(new ClientCapability.IncomingClientScope(`${user.name}_${user.lastName}`))
+      ttl: 28800 // token will live for 8 work hours
+    });
+
+    capability.addScope(new ClientCapability.IncomingClientScope(user.id));
     capability.addScope(
       new ClientCapability.OutgoingClientScope({
         applicationSid: functions.config().twilio.applicationsid
