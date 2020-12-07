@@ -1,4 +1,5 @@
 import * as express from 'express'
+import { adminMiddleware } from '../../middlewares/admin'
 import departments from '../../firestore/departments'
 import users from '../../firestore/users'
 
@@ -22,7 +23,7 @@ router.get('/:id?', async (req, res, next) => {
   }
 })
 
-router.post('/', async (req, res, next) => {
+router.post('/', adminMiddleware, async (req, res, next) => {
   try {
     const { body } = req
 
@@ -40,7 +41,7 @@ router.post('/', async (req, res, next) => {
   }
 })
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', adminMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params
     const { body } = req
@@ -69,7 +70,7 @@ router.put('/:id', async (req, res, next) => {
   }
 })
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', adminMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params
 
