@@ -3,7 +3,7 @@ import calls from '../../firestore/calls'
 
 const router = express.Router()
 
-router.get('/:number', async (req, res, next) => {
+/* router.get('/:number', async (req, res, next) => {
   try {
     const number = req.params.number
     const results = await calls.getCallsOfNumber(number);
@@ -11,6 +11,18 @@ router.get('/:number', async (req, res, next) => {
     res.json(results)
   } catch (error) {
     next(error)
+  }
+}); */
+
+router.get('/:callId', async (req, res, next) => {
+  try {
+    const callId = req.params.callId;
+
+    const result = await calls.readOne(callId)
+
+    res.json(result);
+  } catch (error) {
+    next(error);
   }
 });
 
