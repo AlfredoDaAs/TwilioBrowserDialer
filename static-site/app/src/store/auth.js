@@ -9,7 +9,8 @@ const state = {
     name: null,
     email: null,
     error: null,
-    isAdmin: false
+    isAdmin: false,
+    phoneNumber: null,
 }
 
 const actions = {
@@ -46,6 +47,7 @@ const mutations = {
         state.name = payload.name
         state.email = payload.email
         state.isAdmin = payload.isAdmin
+        state.phoneNumber = payload.phoneNumber
     },
     loginError: (state, error) => {
         state.error = error
@@ -78,6 +80,10 @@ const getters = {
 
     getName: (state) => {
         return state.name && state.name.length > 0 ? `Welcome ${state.name}!` : 'User';
+    },
+
+    getPhoneNumber: (state) => {
+      return state.phoneNumber ? state.phoneNumber : '';
     }
 }
 
