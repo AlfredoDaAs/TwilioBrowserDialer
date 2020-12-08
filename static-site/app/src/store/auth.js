@@ -1,6 +1,7 @@
 import axios from '../axios'
 import firebase from "firebase/app";
 import { isOnlineForDatabase, isOfflineForDatabase } from '../firebase'
+import { destroyDevice } from '../twilio'
 
 const state = {
     token: null,
@@ -33,6 +34,7 @@ const actions = {
 
     logout: async ({ commit, state }) => {
         await firebase.database().ref(`users/${state.id}`).update(isOfflineForDatabase)
+        destroyDevice()
         commit('logout')
     }
 }
