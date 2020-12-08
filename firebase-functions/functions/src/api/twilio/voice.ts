@@ -11,12 +11,12 @@ const validateTwilioRequest = (req: express.Request, res: express.Response, next
   const twilioSignature = req.headers['x-twilio-signature']
   const params = req.body
   const url: String = functions.config().twilio.voiceurl // post endpoint
-
+  
   if (typeof twilioSignature === 'string') {
     const requestIsValid = twilio.validateRequest(
       functions.config().twilio.authtoken,
       twilioSignature,
-      `${url}${req.path}?clientName=${req.query.clientName}`,
+      `${url}${req.path}${req.path === '/inbound' ? `?clientName=${req.query.clientName}` : ''}`,
       params
     )
 
@@ -31,12 +31,23 @@ const validateTwilioRequest = (req: express.Request, res: express.Response, next
 }
 
 // Create TwiML for outbound calls
-router.post('/outbound', validateTwilioRequest, (req: express.Request, res: express.Response) => {
+router.post('/outbound', validateTwilioRequest, async (req: express.Request, res: express.Response) => {
   const voiceResponse = new VoiceResponse();
 
+  await calls.createOne({
+    fromData: {
+      from: req.body.callerId
+    },
+    toData: {
+      to: req.body.To
+    },
+    callSid:  req.body.CallSid,
+    direction: 'outbound'
+  })
+  
   voiceResponse.dial({
     callerId: req.body.callerId
-  }, req.body.number);
+  }, req.body.To);
 
   res.type('text/xml');
   res.send(voiceResponse.toString());
