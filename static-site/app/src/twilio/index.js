@@ -10,3 +10,7 @@ export const initDevice = (token) => {
         console.log('Connected');
     })
 }
+
+export const destroyDevice = () => {
+  Device.destroy();
+}
