@@ -4,8 +4,8 @@ import axios from "../../axios";
 import firebase from "firebase/app";
 import { mapGetters } from "vuex";
 import { handleError } from "../../handleErrors";
-import IncomingCallModal from '../../components/IncomingCallModal';
-import IncomingCallCard from '../../components/IncomingCallCard';
+import IncomingCallModal from "../../components/IncomingCallModal";
+import IncomingCallCard from "../../components/IncomingCallCard";
 
 export default {
   components: { IncomingCallModal, IncomingCallCard },
@@ -22,9 +22,9 @@ export default {
     usersData: [],
     InConn: null,
     OutConn: null,
-    showInCallModal: false
+    showInCallModal: false,
   }),
-  computed: mapGetters(["getUserId"]),
+  computed: mapGetters(["getUserId", "getPhoneNumber"]),
   methods: {
     async getUsers() {
       try {
@@ -82,12 +82,16 @@ export default {
           this.onPhone = true;
           // make outbound call with current number
           var n = "+" + user.phoneNumber.replace(/\D/g, "");
-          this.OutConn = Device.connect({ number: n, callerId: '+12512377747' });
+          this.OutConn = Device.connect({
+            To: n,
+            callerId: this.getPhoneNumber,
+            agent: this.getUserId
+          });
           this.log = "Calling " + n;
         }
       } else {
         // hang up call in progress
-        Device.disconnect();
+        Device.disconnectAll();
         this.onPhone = false;
       }
     },
@@ -99,7 +103,7 @@ export default {
       firebase
         .database()
         .ref(`users/${this.getUserId}/calls`)
-        .on('child_changed', (user) => {
+        .on("child_changed", (user) => {
           if (!user.val()) {
             return;
           }
@@ -166,19 +170,22 @@ export default {
     },
     listenIncomingCalls() {
       Device.incoming((conn) => {
-        console.log('Incoming connection from ', conn.customParameters.get("callId"));
+        console.log(
+          "Incoming connection from ",
+          conn.customParameters.get("callId")
+        );
 
-        if(conn.direction === 'INCOMING') {
+        if (conn.direction === "INCOMING") {
           this.InConn = conn;
           this.showInCallModal = true;
         }
-      })
+      });
 
-      Device.on('disconnect', (conn) => {
+      Device.on("disconnect", (conn) => {
         this.onPhone = false;
         this.InConn = null;
         this.OutConn = null;
-      })
+      });
     },
     handleCancelCall() {
       this.InConn.reject();
@@ -187,7 +194,7 @@ export default {
     handleAcceptCall() {
       this.InConn.accept();
       this.showInCallModal = false;
-    }
+    },
   },
   created() {
     this.getToken();
@@ -203,7 +210,12 @@ export default {
 
 <template>
   <b-container>
-    <incoming-call-modal :from="InConn ? InConn.parameters.From : ''" :show="showInCallModal" @onCancel="handleCancelCall" @onAccept="handleAcceptCall" />
+    <incoming-call-modal
+      :from="InConn ? InConn.parameters.From : ''"
+      :show="showInCallModal"
+      @onCancel="handleCancelCall"
+      @onAccept="handleAcceptCall"
+    />
     <b-row>
       <b-col md="6">
         <b-card title="Make a Call">
@@ -248,7 +260,9 @@ export default {
             onPhone ? log : "Call status"
           }}</b-alert>
         </b-card>
-        <incoming-call-card :callId="InConn ? InConn.customParameters.get('callId') : ''" />
+        <incoming-call-card
+          :callId="InConn ? InConn.customParameters.get('callId') : ''"
+        />
       </b-col>
       <b-col md="6">
         <b-card title="Call queue">
