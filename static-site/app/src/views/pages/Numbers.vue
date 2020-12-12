@@ -1,4 +1,5 @@
 <script>
+import { mapGetters } from 'vuex'
 import axios from '../../axios'
 import { handleError } from '../../handleErrors'
 import NumberPurchase from '../../components/NumberPurchase';
@@ -9,8 +10,19 @@ export default {
     availableNumbers: [],
     fields: ['phone_number', 'info', 'purchase'],
     showPurchaseModal: false,
-    phoneNumber: ''
+    phoneNumber: '',
+    selectedState: null,
+    areaCode: ''
   }),
+  computed: {
+    ...mapGetters(['getStates']),
+    states() {
+      const states = [{ value: null, text: 'Select a State' }]
+      for (const key in this.getStates) {
+        states.push({ value: key, text: this.getStates[key] })
+      }
+    }
+  },
   components: {
     NumberPurchase
   },
@@ -55,6 +67,29 @@ export default {
   <b-container>
     <b-card title="Search & Purchase Phone Numbers">
       <b-form>
+        <b-row>
+          <b-col md="6">
+            <b-form-group
+              id="depts-group-1"
+              description="Select a state if you prefer one"
+              label="Select a state"
+              label-for="depts-select"
+            >
+              <b-form-select
+                id="depts-select"
+                v-model="selectedState"
+                :options="states"
+              ></b-form-select>
+            </b-form-group>
+          </b-col>
+          <b-col md="6">
+            <b-form-input
+                v-model="areaCode"
+                type="text"
+                placeholder="Area Code"
+            ></b-form-input>
+          </b-col>
+        </b-row>
         <div class="d-flex justify-content-between mb-2">
           <p>Click search button to get a list of available phone numbers</p>
           <b-button @click="search">
