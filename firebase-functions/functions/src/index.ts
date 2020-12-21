@@ -12,6 +12,7 @@ import { apiValidation } from './api'
 import tokenCrud from './api/twilio/token'
 import voiceCrud from './api/twilio/voice'
 import numbersCrud from './api/twilio/numbers'
+import taskRouter from './api/twilio/taskRouter'
 
 import usersCrud from './api/users/crud'
 import deparmentsCrud from './api/deparments/crud'
@@ -32,6 +33,8 @@ app.use('/auth', authValidation);
 
 // twilio TwiML voice endpoint
 app.use('/voice', voiceCrud);
+
+app.use('/taskRouter', taskRouter);
 
 // from here down app is protected by token
 app.use(apiValidation);
