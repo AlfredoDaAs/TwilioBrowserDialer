@@ -12,7 +12,15 @@ const client = twilio(accountSid, authToken);
 
 router.get('/search', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
-    const availablePhoneNumbers = await client.availablePhoneNumbers('US').local.list({ limit: 20 });
+    const { areaCode, state } = req.query;
+    const filter:any = {
+      limit: 20
+    };
+
+    if(areaCode) filter.areaCode = Number(areaCode);
+    if(state) filter.inRegion = state;
+    
+    const availablePhoneNumbers = await client.availablePhoneNumbers('US').local.list(filter);
 
     res.json(availablePhoneNumbers)
   } catch (error) {
