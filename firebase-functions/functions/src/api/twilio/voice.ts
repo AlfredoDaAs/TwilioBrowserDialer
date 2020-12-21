@@ -1,22 +1,33 @@
 import * as express from 'express'
 import * as functions from 'firebase-functions';
 import * as twilio from 'twilio'
+import * as querystring from 'querystring'
+import * as util from 'util'
 import calls from '../../firestore/calls'
 
 const router = express.Router()
 
 const VoiceResponse = twilio.twiml.VoiceResponse;
 
+const accountSid: string = functions.config().twilio.accountsid;
+const authToken: string = functions.config().twilio.authtoken;
+const url: string = functions.config().twilio.voiceurl
+const workspaceSid: string = functions.config().twilio.workspace_sid;
+const { idle } = functions.config().twilio.workspace_activities;
+
+const twilioClient = twilio(accountSid, authToken); 
+
+const workspace = twilioClient.taskrouter.v1.workspaces(workspaceSid);
+
 const validateTwilioRequest = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const twilioSignature = req.headers['x-twilio-signature']
   const params = req.body
-  const url: String = functions.config().twilio.voiceurl // post endpoint
   
   if (typeof twilioSignature === 'string') {
     const requestIsValid = twilio.validateRequest(
       functions.config().twilio.authtoken,
       twilioSignature,
-      `${url}${req.path}${req.path === '/inbound' ? `?clientName=${req.query.clientName}` : ''}`,
+      `${url}${req.path}${req.path === '/incoming' ? `?clientName=${req.query.clientName}` : ''}`,
       params
     )
 
@@ -53,7 +64,93 @@ router.post('/outbound', validateTwilioRequest, async (req: express.Request, res
   res.send(voiceResponse.toString());
 });
 
-router.post('/inbound', validateTwilioRequest, async (req: express.Request, res: express.Response) => {
+
+
+router.post('/incoming', validateTwilioRequest, async (req: express.Request, res: express.Response) => {
+  const voiceResponse = new VoiceResponse();
+  // const clientName = req.query.clientName as string
+
+  /* const result = await departments.getDeparments();
+  let say = ''
+
+  if(result.length > 0) {
+    for (const key in result) {
+      say += `For ${result[key].name}, press ${key + 1}. `
+    }
+
+    const gather = voiceResponse.gather({
+      numDigits: 1,
+      action: `${url}/enqueue`,
+      method: 'POST'
+    })
+
+    gather.say(say);
+  } */
+
+  const gather = voiceResponse.gather({
+    numDigits: 1,
+    action: `${url}/enqueue`,
+    method: 'POST'
+  });
+
+  gather.say('For Sales, press one. for IT press two. For talking to an agent, press 3.');
+
+  res.type('text/xml');
+  res.send(voiceResponse.toString());
+});
+
+router.post('/enqueue', validateTwilioRequest, async (req, res) => {
+  console.log('enqueue', req.body);
+  const pressedKey = req.body.Digits;
+  const voiceResponse = new VoiceResponse();
+  const departments = ['Sales', 'IT', 'Default'];
+
+  const selectedOpt = departments[Number(pressedKey) + 1];
+
+  const workflows = await workspace.workflows.list({ friendlyName: 'Main' });
+  const workflowSid = workflows[0].sid;
+
+  const enqueue = voiceResponse.enqueue({
+    workflowSid,
+    waitUrl: 'https://twimlets.com/holdmusic?Bucket=com.twilio.music.soft-rock'
+  });
+
+  enqueue.task(JSON.stringify({ selected_department: selectedOpt }));
+
+  res.type('text/xml');
+  res.send(voiceResponse.toString());
+});
+
+// POST /assignment
+router.post('/assignment', validateTwilioRequest, (req, res) => {
+  console.log('assignment', req.body);
+  
+  res.type('application/json');
+  res.send({
+    instruction: "dequeue",
+    post_work_activity_sid: idle
+  });
+});
+
+router.post('/events', validateTwilioRequest, (req, res) => {
+  const eventType = req.body.EventType;
+  const taskAttributes = (req.body.TaskAttributes)? JSON.parse(req.body.TaskAttributes) : {};
+
+  if(eventType === 'workflow.timeout') {
+    const query = querystring.stringify({
+      Message: 'Sorry, All agents are busy. Please leave a message. We\'ll call you as soon as possible',
+      Email: process.env.MISSED_CALLS_EMAIL_ADDRESS});
+    const voicemailUrl = util.format("http://twimlets.com/voicemail?%s", query);
+    twilioClient.calls(taskAttributes.call_sid).update({
+      method: 'POST',
+      url: voicemailUrl
+    });
+  }
+
+  res.json({});
+});
+
+/* router.post('/inbound', validateTwilioRequest, async (req: express.Request, res: express.Response) => {
   const result = await calls.createOne({
     fromData: {
       from: req.body.From,
@@ -74,8 +171,10 @@ router.post('/inbound', validateTwilioRequest, async (req: express.Request, res:
   })
 
   const clientName = req.query.clientName as string
+
   const voiceResponse = new VoiceResponse();
-  const dial = voiceResponse.dial();
+  const dial = voiceResponse.dial()
+
   const client = dial.client(clientName)
 
   client.parameter({
@@ -85,6 +184,10 @@ router.post('/inbound', validateTwilioRequest, async (req: express.Request, res:
 
   res.type('text/xml');
   res.send(voiceResponse.toString());
-});
+}); */
+
+/* router.post('/events/', async (req, res) => {
+  
+}); */
 
 export default router;
