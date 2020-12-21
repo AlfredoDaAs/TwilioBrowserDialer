@@ -1,6 +1,5 @@
 <script>
 import axios from "../../axios";
-import moment from "moment";
 import DeparmentsCreateForm from "../../components/DeparmentsCreateForm";
 import { handleError } from "../../handleErrors";
 import DepartmentDeleteForm from '../../components/DepartmentDeleteForm';
@@ -24,7 +23,9 @@ export default {
         {
           label: "Created At",
           field: "createdAt",
-          formatFn: this.formatDate,
+          type: 'date',
+          dateInputFormat: 'T',
+          dateOutputFormat: 'MMMM do yyyy, h:mm:ss a'
         },
         {
           label: "Action",
@@ -45,9 +46,6 @@ export default {
     };
   },
   methods: {
-    formatDate(value) {
-      return moment(value).format("MMMM Do YYYY, h:mm:ss a");
-    },
     async loadDepartments() {
       try {
         const result = await axios.get('/departments');

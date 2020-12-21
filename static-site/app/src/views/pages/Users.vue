@@ -1,6 +1,5 @@
 <script>
 import axios from "../../axios";
-import moment from "moment";
 import UserCreateForm from "../../components/UserCreateForm";
 import UserUpdateForm from "../../components/UserUpdateForm";
 import UserDeleteForm from "../../components/UserDeleteForm";
@@ -54,7 +53,9 @@ export default {
         {
           label: "Created At",
           field: "createdAt",
-          formatFn: this.formatDate,
+          type: 'date',
+          dateInputFormat: 'T',
+          dateOutputFormat: 'MMMM do yyyy, h:mm:ss a'
         },
         {
           label: "Action",
@@ -94,9 +95,6 @@ export default {
     },
     formatIsAdmin(value) {
       return value ? "Admin" : "User";
-    },
-    formatDate(value) {
-      return moment(value).format("MMMM Do YYYY, h:mm:ss a");
     },
     formatDepts(value) {
       let depts = ""
