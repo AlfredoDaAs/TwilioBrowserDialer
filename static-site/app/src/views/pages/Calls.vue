@@ -209,7 +209,7 @@ export default {
 </script>
 
 <template>
-  <b-container>
+  <b-container fluid>
     <incoming-call-modal
       :from="InConn ? InConn.parameters.From : ''"
       :show="showInCallModal"
@@ -217,6 +217,11 @@ export default {
       @onAccept="handleAcceptCall"
     />
     <b-row>
+      <b-col md="6">
+        <incoming-call-card
+          :callId="InConn ? InConn.customParameters.get('callId') : ''"
+        />
+      </b-col>
       <b-col md="6">
         <b-card title="Make a Call">
           <div class="d-flex">
@@ -260,12 +265,11 @@ export default {
             onPhone ? log : "Call status"
           }}</b-alert>
         </b-card>
-        <incoming-call-card
-          :callId="InConn ? InConn.customParameters.get('callId') : ''"
-        />
       </b-col>
-      <b-col md="6">
-        <b-card title="Call queue">
+    </b-row>
+    <b-row class="mt-3">
+      <b-col offset-md="8" md="4">
+        <b-card title="Queue Calls">
           <b-list-group>
             <b-list-group-item
               v-for="(call, i) in queueCalls"
