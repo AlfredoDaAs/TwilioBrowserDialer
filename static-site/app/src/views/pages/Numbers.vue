@@ -21,6 +21,14 @@ export default {
       for (const key in this.getStates) {
         states.push({ value: key, text: this.getStates[key] })
       }
+
+      return states;
+    },
+    searchParams() {
+      const params = new URLSearchParams();
+      if(this.selectedState) params.append('state', this.selectedState);
+      if(this.areaCode.trim()) params.append('areaCode', this.areaCode.trim())
+      return params;
     }
   },
   components: {
@@ -29,7 +37,9 @@ export default {
   methods: {
     async search() {
       try {
-        const result = await axios.get('/numbers/search');
+        const result = await axios.get(`/numbers/search`, {
+          params: this.searchParams
+        });
         const numbers = result.data
 
         this.availableNumbers = numbers.map(number => ({
@@ -69,18 +79,11 @@ export default {
       <b-form>
         <b-row>
           <b-col md="6">
-            <b-form-group
-              id="depts-group-1"
-              description="Select a state if you prefer one"
-              label="Select a state"
-              label-for="depts-select"
-            >
-              <b-form-select
-                id="depts-select"
-                v-model="selectedState"
-                :options="states"
-              ></b-form-select>
-            </b-form-group>
+            <b-form-select
+              id="depts-select"
+              v-model="selectedState"
+              :options="states"
+            ></b-form-select>
           </b-col>
           <b-col md="6">
             <b-form-input
