@@ -13,14 +13,47 @@ const client = twilio(accountSid, authToken);
 
 const workspace = client.taskrouter.v1.workspaces(workspaceSid);
 
+export const getActivityByName = (name: string): string => {
+  let activitySid = '';
+
+  switch (name) {
+    case 'idle':
+      activitySid = idle;
+      break;
+    case 'offline':
+      activitySid = offline;
+      break;
+    case 'bussy':
+      activitySid = bussy;
+    case 'reserved':
+      activitySid = reserved;
+      break;
+    default:
+      activitySid = idle;
+      break;
+  }
+
+  return activitySid;
+}
+
 export const createWorker = (opts: any) => {
   return workspace.workers.create({
     friendlyName: opts.name,
     attributes: JSON.stringify({
       'departments': opts.departments,
-      'contact_uri': opts.id, // clientName Id
+      'contact_uri': `client:${opts.id}`,
     }),
     activitySid: offline,
+  })
+}
+
+export const updateWorker = (workerSid: string, opts: any) => {
+  return workspace.workers(workerSid).update({
+    friendlyName: opts.name,
+    attributes: JSON.stringify({
+      'departments': opts.departments,
+      'contact_uri': `client:${opts.id}`,
+    })
   })
 }
 
