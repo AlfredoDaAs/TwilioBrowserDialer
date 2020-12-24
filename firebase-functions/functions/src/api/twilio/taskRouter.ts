@@ -65,4 +65,39 @@ router.put('/worker', async (req, res, next) => {
     next(error);
   }
 });
+
+router.post('/updateWorkers', async (req, res, next) => {
+  try {
+    const usersList = await users.getAllUsers();
+    const workers = await client.workers.list();
+
+    usersList.forEach(async (user) => {
+      const worker = workers.find((worker:any) => {
+        return JSON.parse(worker.attributes).contact_uri === `client:${user.id}`
+      })
+
+      if(!worker) {
+        const result = await taskRouter.createWorker({
+          id: user.id,
+          name: `${user.name} ${user.lastName}`,
+          departments: user.departments ? user.departments : []
+        })
+
+        await users.updateOne(user.id, {
+          workerSid: result.sid
+        })
+      } else {
+        await taskRouter.updateWorker(worker.sid, {
+          id: user.id,
+          name: `${user.name} ${user.lastName}`,
+          departments: user.departments ? user.departments : []
+        })
+      }
+    })
+
+    res.json(true);
+  } catch (error) {
+    next(error);
+  }
+})
 export default router;
