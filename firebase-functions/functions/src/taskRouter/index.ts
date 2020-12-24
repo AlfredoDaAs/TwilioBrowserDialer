@@ -47,6 +47,9 @@ export const createWorker = (opts: any) => {
   })
 }
 
+export const deleteworker = (workerSid: string) => {
+  return workspace.workers(workerSid).remove();
+}
 export const updateWorker = (workerSid: string, opts: any) => {
   return workspace.workers(workerSid).update({
     friendlyName: opts.name,
@@ -64,16 +67,10 @@ export const createTaskQueue = (dept:any, isDefault = false) => {
     assignmentActivitySid: bussy,
     reservationActivitySid: reserved,
   })
+}
 
-  /* return Promise.all([
-    // create departments
-    workspace.taskQueues.create({
-      friendlyName: 'Default',
-      targetWorkers: '1==1',
-      assignmentActivitySid: busyActivity ? busyActivity.sid : undefined,
-      reservationActivitySid: reservedActivity ? reservedActivity.sid : undefined,
-    })
-  ]) */
+export const deleteTaskQueue = (taskQueueSid: string) => {
+  return workspace.taskQueues(taskQueueSid).remove()
 }
 
 export const createWorkflow = async () => {
