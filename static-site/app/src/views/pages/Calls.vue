@@ -169,7 +169,7 @@ export default {
       this.selectUser = id;
     },
     listenIncomingCalls() {
-      Device.incoming((conn) => {
+      Device.on("incoming", (conn) => {
         console.log(
           "Incoming connection from ",
           conn.customParameters.get("callId")

@@ -6,7 +6,7 @@ export const initDevice = (token) => {
       enableRingingState: true
     })
 
-    Device.ready(() => {
+  Device.on('ready', () => {
         console.log('Connected');
     })
 }
