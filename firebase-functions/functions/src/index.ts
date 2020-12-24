@@ -31,7 +31,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/auth', authValidation);
 
-// twilio TwiML voice endpoint
+// twilio endpoints
 app.use('/voice', voiceCrud);
 
 app.use('/taskRouter', taskRouter);
