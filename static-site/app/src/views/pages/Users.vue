@@ -3,7 +3,7 @@ import axios from "../../axios";
 import UserCreateForm from "../../components/UserCreateForm";
 import UserUpdateForm from "../../components/UserUpdateForm";
 import UserDeleteForm from "../../components/UserDeleteForm";
-import { handleError } from "../../handleErrors";
+import { handleError, handleMessage } from "../../handleErrors";
 import { mapGetters } from "vuex";
 
 export default {
@@ -16,6 +16,7 @@ export default {
   computed: mapGetters(["getUserId", "isAdmin"]),
   data() {
     return {
+      updatingWorkers: false,
       departments: [],
       usersList: [],
       userId: "",
@@ -137,6 +138,19 @@ export default {
         this.userId = "";
       });
     },
+    async updateWorkers() {
+      try {
+        this.updatingWorkers = true;
+        const result = await axios.post('/taskRouter/updateWorkers');
+
+        this.updatingWorkers = false;
+        if(result.data) {
+          handleMessage('Workers updated!', this, 'success');
+        }
+      } catch (error) {
+        handleError(error, this, "danger");
+      }
+    }
   },
   created() {
     this.getUsers();
@@ -145,26 +159,17 @@ export default {
 </script>
 
 <template>
-  <b-container>
-    <div id="create-user-section" class="mb-4">
-      <div class="d-flex mb-3">
-        <h3 class="d-inline-block">
-          Create User
-          <b-button
-            variant="link"
-            class="d-inline-block"
-            size="sm"
-            v-b-toggle.create-user
-            ><b-icon-plus-circle></b-icon-plus-circle
-          ></b-button>
-        </h3>
-      </div>
-      <b-collapse id="create-user">
-        <b-card>
-          <user-create-form @onSubmitted="userCreated" />
-        </b-card>
-      </b-collapse>
+  <b-container fluid>
+    <div class="d-flex mb-3">
+      <b-card class="text-left">
+        <p>Script to update or generate a Worker related to each Agent, this will allow Twilio Task Router to send calls to connected Agents</p>
+        <b-button @click="updateWorkers" :disabled="updatingWorkers" variant="outline-info">
+          <b-spinner v-if="updatingWorkers" small></b-spinner>
+          Update Twilio Workers
+        </b-button>
+      </b-card>
     </div>
+    <user-create-form @onSubmitted="userCreated" />
     <div id="search-for-section">
       <div class="d-flex">
         <h3>Search for a User</h3>
@@ -178,13 +183,14 @@ export default {
         >
           <template slot="table-row" slot-scope="props">
             <span v-if="props.column.field == 'action'">
-              <b-button @click="editUser(props.row.id)" variant="link">
+              <b-button size="sm" @click="editUser(props.row.id)" variant="link">
                 <b-icon-pencil></b-icon-pencil>
               </b-button>
               <b-button
                 v-if="props.row.id !== getUserId"
                 @click="deleteUser(props.row.id)"
                 variant="link"
+                size="sm"
               >
                 <b-icon-trash></b-icon-trash>
               </b-button>
