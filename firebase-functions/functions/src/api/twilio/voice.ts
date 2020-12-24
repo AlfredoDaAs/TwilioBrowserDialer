@@ -4,6 +4,7 @@ import * as twilio from 'twilio'
 import * as querystring from 'querystring'
 import * as util from 'util'
 import calls from '../../firestore/calls'
+import departments from '../../firestore/departments'
 
 const router = express.Router()
 
@@ -70,13 +71,15 @@ router.post('/incoming', validateTwilioRequest, async (req: express.Request, res
   const voiceResponse = new VoiceResponse();
   // const clientName = req.query.clientName as string
 
-  /* const result = await departments.getDeparments();
+  const result = await departments.getDeparments();
   let say = ''
 
   if(result.length > 0) {
     for (const key in result) {
-      say += `For ${result[key].name}, press ${key + 1}. `
+      say += `For ${result[key].name}, press ${Number(key) + 1}. `
     }
+
+    say += `To talk to an Agent, press ${result.length + 1}`
 
     const gather = voiceResponse.gather({
       numDigits: 1,
@@ -84,16 +87,40 @@ router.post('/incoming', validateTwilioRequest, async (req: express.Request, res
       method: 'POST'
     })
 
-    gather.say(say);
-  } */
+    gather.say({
+      loop: 10
+    }, say)
+  }
+  else {
+    const workflows = await workspace.workflows.list({ friendlyName: 'Main' });
+    const workflowSid = workflows[0].sid;
 
-  const gather = voiceResponse.gather({
-    numDigits: 1,
-    action: `${url}/enqueue`,
-    method: 'POST'
+    const enqueue = voiceResponse.enqueue({
+      workflowSid,
+      waitUrl: 'https://twimlets.com/holdmusic?Bucket=com.twilio.music.soft-rock'
   });
 
-  gather.say('For Sales, press one. for IT press two. For talking to an agent, press 3.');
+    enqueue.task(JSON.stringify({ selected_department: 'Default' }));
+  }
+
+  /* await calls.createOne({
+    fromData: {
+      from: req.body.From,
+      city: req.body.FromCity,
+      country: req.body.FromCountry,
+      state: req.body.FromState,
+      zip: req.body.FromZip
+    },
+    toData: {
+      to: req.body.To,
+      city: req.body.ToCity,
+      country: req.body.ToCountry,
+      state: req.body.ToState,
+      zip: req.body.ToZip
+    },
+    callSid:  req.body.CallSid,
+    direction: 'inbound'
+  }) */
 
   res.type('text/xml');
   res.send(voiceResponse.toString());
@@ -103,9 +130,14 @@ router.post('/enqueue', validateTwilioRequest, async (req, res) => {
   console.log('enqueue', req.body);
   const pressedKey = req.body.Digits;
   const voiceResponse = new VoiceResponse();
-  const departments = ['Sales', 'IT', 'Default'];
 
-  const selectedOpt = departments[Number(pressedKey) + 1];
+  const result = await departments.getDeparments();
+
+  const depts = result.map(dept => dept.name);
+
+  depts.push('Default');
+
+  const selectedOpt = depts[Number(pressedKey) + 1];
 
   const workflows = await workspace.workflows.list({ friendlyName: 'Main' });
   const workflowSid = workflows[0].sid;
