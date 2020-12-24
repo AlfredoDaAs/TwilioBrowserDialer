@@ -87,33 +87,19 @@ export default {
 </script>
 
 <template>
-  <b-card title="Incoming Call">
-    <b-overlay>
+  <div id="inbound-calls" class="mb-3">
+  <div class="d-flex justify-content-between mb-2">
+    <div>
+      <h5 style="display: inline-block;" class="mr-3">Incoming Call:</h5>
+      <p v-if="call !== null" style="display: inline-block;">
+        From: {{ call.fromData.from }}, City: {{ call.fromData.city }}, Country: {{ call.fromData.country }}, State: {{ call.fromData.state }}, Zip: {{ call.fromData.zip }}
+      </p>
+    </div>
+    <b-button v-b-toggle.collapse-1 variant="primary">Store Contact</b-button>
+  </div>
+  <b-collapse id="collapse-1" class="mt-2">
+    <div style="width: 100%">
       <b-form @submit.stop.prevent="saveContact" @reset="resetContactForm">
-        <h5 class="text-left">Caller Information</h5>
-        <b-table-simple v-if="call !== null">
-          <b-tr>
-            <b-th>From</b-th>
-            <b-td>{{ call.fromData.from }}</b-td>
-          </b-tr>
-          <b-tr>
-            <b-th>City</b-th>
-            <b-td>{{ call.fromData.city }}</b-td>
-          </b-tr>
-          <b-tr>
-            <b-th>Country</b-th>
-            <b-td>{{ call.fromData.country }}</b-td>
-          </b-tr>
-          <b-tr>
-            <b-th>State</b-th>
-            <b-td>{{ call.fromData.state }}</b-td>
-          </b-tr>
-          <b-tr>
-            <b-th>Zip</b-th>
-            <b-td>{{ call.fromData.zip }}</b-td>
-          </b-tr>
-        </b-table-simple>
-        <br />
         <h5 class="text-left">Store Contact</h5>
         <b-row>
           <b-col md="6">
@@ -157,8 +143,7 @@ export default {
           <b-button type="reset" variant="outline-secondary">Clear</b-button>
         </div>
       </b-form>
-      <hr />
-      <b-alert class="mt-5" show variant="info"> Call status </b-alert>
-    </b-overlay>
-  </b-card>
+    </div>
+  </b-collapse>
+</div>
 </template>
