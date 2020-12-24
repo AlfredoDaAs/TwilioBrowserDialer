@@ -13,7 +13,8 @@ class Collection extends AbstractCollection {
         phoneNumber: null,
         picture: null,
         isAdmin: false,
-        departments: []
+        departments: [],
+        workerSid: null,
     }
 
     public async findByEmail (email: String): Promise<any> {
