@@ -3,6 +3,7 @@ import * as functions from 'firebase-functions';
 import * as twilio from 'twilio'
 import * as taskRouter from '../../taskRouter'
 import users from '../../firestore/users'
+import departments from '../../firestore/departments'
 
 const router = express.Router();
 
@@ -100,4 +101,38 @@ router.post('/updateWorkers', async (req, res, next) => {
     next(error);
   }
 })
+
+router.post('/batch/taskQueue', async (req, res, next) => {
+  try {
+    const depts = await departments.getDeparments();
+    const taskQueues = await client.taskQueues.list();
+    let taskQueuesCreated = 0
+
+    depts.forEach(async (dept) => {
+      const taskQueue = taskQueues.find(queue => queue.friendlyName === dept.name);
+
+      if(!taskQueue) {
+        await taskRouter.createTaskQueue({
+          name: dept.name
+        })
+        taskQueuesCreated++;
+      }
+    })
+
+    res.json({
+      created: taskQueuesCreated
+    })
+  } catch (error) {
+    next(error);
+  }
+})
+
+/* router.put('/task', async (req, res, next) => {
+  try {
+
+  } catch (error) {
+    next(error);
+  }
+}) */
+
 export default router;
