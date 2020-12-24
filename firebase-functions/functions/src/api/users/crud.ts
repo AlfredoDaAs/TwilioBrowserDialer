@@ -1,6 +1,7 @@
 import * as express from 'express'
 import { adminMiddleware } from '../../middlewares/admin'
 import users from '../../firestore/users'
+import * as taskRouter from '../../taskRouter'
 
 const router = express.Router()
 
@@ -46,6 +47,16 @@ router.post('/', adminMiddleware, async (req, res, next) => {
             departments: body.departments.length > 0 ? body.departments : []
         })
 
+        const worker = await taskRouter.createWorker({
+          id: result,
+          name: `${body.name} ${body.lastName}`,
+          departments: body.departments.length > 0 ? body.departments : []
+        })
+
+        await users.updateOne(result, {
+          workerSid: worker.sid
+        })
+
         res.json(result)
     } catch (error) {
         next(error)
@@ -85,6 +96,8 @@ router.delete('/:id', adminMiddleware, async (req, res, next) => {
     }
 
     const result = await users.hardDelete(id);
+    if(user.workerSid) taskRouter.deleteworker(user.workerSid);
+
     return res.json(result)
   } catch (error) {
     return next(error)
