@@ -1,5 +1,6 @@
 import * as express from 'express'
 import { adminMiddleware } from '../../middlewares/admin'
+import * as taskRouter from '../../taskRouter'
 import departments from '../../firestore/departments'
 import users from '../../firestore/users'
 
@@ -33,6 +34,14 @@ router.post('/', adminMiddleware, async (req, res, next) => {
 
     const result = await departments.createOne({
       name: body.name
+    })
+
+    const taskQueue = await taskRouter.createTaskQueue({
+      name: body.name
+    })
+
+    await departments.updateOne(result, {
+      taskQueueSid: taskQueue.sid
     })
 
     return res.json(result)
@@ -87,6 +96,7 @@ router.delete('/:id', adminMiddleware, async (req, res, next) => {
     const deleted = await departments.hardDelete(id);
 
     if (deleted) {
+      if(department.taskQueueSid) await taskRouter.deleteTaskQueue(department.taskQueueSid);
       await users.removeUsersDepartment(department.name);
     }
 
