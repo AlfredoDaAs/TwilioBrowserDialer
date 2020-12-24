@@ -6,6 +6,7 @@ import { mapGetters } from "vuex";
 import { handleError } from "../../handleErrors";
 import IncomingCallModal from "../../components/IncomingCallModal";
 import IncomingCallCard from "../../components/IncomingCallCard";
+import { initWorker } from "../../twilio";
 
 export default {
   components: { IncomingCallModal, IncomingCallCard },
@@ -23,6 +24,10 @@ export default {
     InConn: null,
     OutConn: null,
     showInCallModal: false,
+    worker: null,
+    reservation: null,
+    available: false,
+    activity: 'Offline'
   }),
   computed: mapGetters(["getUserId", "getPhoneNumber"]),
   methods: {
@@ -53,25 +58,13 @@ export default {
         handleError(error, this, "danger");
       }
     },
-    async getUser(id) {
-      try {
-        if (id) {
-          const result = await axios.get(`users/${id}`);
-
-          return result.data;
-        } else {
-          return null;
-        }
-      } catch (error) {
-        handleError(error, this, "danger");
-      }
-    },
     async getToken() {
       const result = await axios.get(`/token/${this.getUserId}`);
 
       if (result.data) {
         const token = result.data.token;
         this.$store.dispatch("setToken", token);
+        this.initTaskRouter(result.data.trToken);
       }
     },
     toggleCall() {
@@ -85,13 +78,17 @@ export default {
           this.OutConn = Device.connect({
             To: n,
             callerId: this.getPhoneNumber,
-            agent: this.getUserId
+            agent: this.getUserId,
           });
           this.log = "Calling " + n;
         }
       } else {
         // hang up call in progress
         Device.disconnectAll();
+        if (this.reservation) {
+          this.reservation.task.complete();
+          // this.completeTask(this.reservation.task.sid);
+        }
         this.onPhone = false;
       }
     },
@@ -140,7 +137,7 @@ export default {
             }
           });
 
-          usersList.unshift({ value: null, text: "User to Transfer" });
+          usersList.unshift({ value: null, text: "Transfer To" });
           this.transferUsers = usersList;
         });
     },
@@ -195,6 +192,52 @@ export default {
       this.InConn.accept();
       this.showInCallModal = false;
     },
+    initTaskRouter(token) {
+      const worker = initWorker(token);
+      this.worker = worker;
+
+      worker.on("ready", (ready) => {
+        console.log(`Worker ${ready.sid} is now ready for work`);
+        this.available = ready.available
+        this.activity = ready.activityName
+        console.log(ready);
+      });
+
+      worker.update("ActivitySid", "WA3ebbf81a5d6a83b55472203d2c24bc08", function(err, worker) {
+          console.log(worker.sid);
+      });
+
+      worker.on('reservation.created', (reservation) => {
+        reservation.dequeue();
+      });
+
+      worker.on("reservation.accepted", (reservation) => {
+        this.reservation = reservation;
+        /* console.log(reservation.task.attributes); // {foo: 'bar', baz: 'bang' }
+        console.log(reservation.task.priority); // 1
+        console.log(reservation.task.age); // 300
+        console.log(reservation.task.sid); // WTxxx
+        console.log(reservation.sid); // WRxxx */
+      });
+
+      worker.on('activity.update', (worker) => {
+        this.available = worker.available
+        this.activity = worker.activityName
+      })
+    },
+    completeTask(taskSid) {
+      console.log("taskSid", taskSid, this.worker);
+      this.worker.completeTask(taskSid, function (error, completedTask) {
+        if (error) {
+          console.log(error.code);
+          console.log(error.message);
+          return;
+        }
+        console.log("Completed Task: " + completedTask.assignmentStatus);
+      });
+    },
+    activityChange(val) {
+    }
   },
   created() {
     this.getToken();
@@ -210,26 +253,22 @@ export default {
 
 <template>
   <b-container fluid>
-    <incoming-call-modal
-      :from="InConn ? InConn.parameters.From : ''"
-      :show="showInCallModal"
-      @onCancel="handleCancelCall"
-      @onAccept="handleAcceptCall"
-    />
-    <b-row>
-      <b-col md="6">
-        <incoming-call-card
-          :callId="InConn ? InConn.customParameters.get('callId') : ''"
-        />
-      </b-col>
-      <b-col md="6">
-        <b-card title="Make a Call">
-          <div class="d-flex">
-            <div style="width: 75%">
-              <b-form-select v-model="selectUser" :options="usersToCall">
-              </b-form-select>
-            </div>
-            <div>
+    <div class="d-flex">
+      <b-card style="width: 100%" title="Calls">
+        <div class="d-flex mb-2">
+          <h5>Receive calls status: </h5>
+          <b-form-checkbox class="ml-2" disabled @change="activityChange" v-model="available" name="check-button" switch>
+            Available ({{ activity }})
+          </b-form-checkbox>
+        </div>
+        <div id="outbound-calls" class="d-flex mb-3">
+          <div class="mr-4">
+            <b-form-select
+              style="width: 360px"
+              v-model="selectUser"
+              :options="usersToCall"
+            ></b-form-select>
+            <div style="display: inline-block">
               <b-button
                 class="mx-2"
                 variant="success"
@@ -252,23 +291,51 @@ export default {
               </b-button>
             </div>
           </div>
-          <div id="transfer-calls" class="d-flex mt-3">
-            <div style="width: 75%">
-              <b-form-select v-model="selectTransfer" :options="transferUsers">
-              </b-form-select>
-            </div>
-            <div class="ml-2">
-              <b-button @click="transferTo">Transfer</b-button>
+          <div>
+            <b-form-select
+              style="width: 360px"
+              v-model="selectTransfer"
+              :options="transferUsers"
+            ></b-form-select>
+            <div style="display: inline-block">
+              <b-button class="mx-2" @click="transferTo">Transfer</b-button>
             </div>
           </div>
-          <b-alert class="mt-5" show variant="info">{{
-            onPhone ? log : "Call status"
-          }}</b-alert>
-        </b-card>
-      </b-col>
-    </b-row>
-    <b-row class="mt-3">
-      <b-col offset-md="8" md="4">
+        </div>
+        <hr />
+        <incoming-call-card
+          :callId="InConn ? InConn.customParameters.get('callId') : ''"
+        />
+        <b-table-simple>
+          <b-thead>
+            <b-tr>
+              <b-th>From</b-th>
+              <b-th>To</b-th>
+              <b-th>Direction</b-th>
+              <b-th>Date</b-th>
+              <b-th>Time</b-th>
+            </b-tr>
+          </b-thead>
+          <b-tbody>
+            <b-tr>
+              <b-td></b-td>
+              <b-td></b-td>
+              <b-td></b-td>
+              <b-td></b-td>
+              <b-td></b-td>
+            </b-tr>
+          </b-tbody>
+        </b-table-simple>
+      </b-card>
+    </div>
+    <incoming-call-modal
+      :from="InConn ? InConn.parameters.From : ''"
+      :show="showInCallModal"
+      @onCancel="handleCancelCall"
+      @onAccept="handleAcceptCall"
+    />
+    <b-row class="mt-2">
+      <b-col md="5">
         <b-card title="Queue Calls">
           <b-list-group>
             <b-list-group-item
