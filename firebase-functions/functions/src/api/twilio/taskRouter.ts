@@ -29,6 +29,19 @@ router.post('/worker', async (req, res, next) =>  {
   }
 });
 
+router.post('/worker/activity/:activity', async (req, res, next) => {
+  try {
+    const { activity } = req.params;
+    const { workerSid } = req.decoded;
+
+    await taskRouter.updateWorkerActivity(workerSid, activity);
+
+    res.json(true)
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post('/taskQueue', async (req, res, next) => {
   try {
     const taskQueue = await taskRouter.createTaskQueue({

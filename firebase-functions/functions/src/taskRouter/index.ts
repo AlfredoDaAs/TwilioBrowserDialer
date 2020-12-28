@@ -50,6 +50,7 @@ export const createWorker = (opts: any) => {
 export const deleteworker = (workerSid: string) => {
   return workspace.workers(workerSid).remove();
 }
+
 export const updateWorker = (workerSid: string, opts: any) => {
   return workspace.workers(workerSid).update({
     friendlyName: opts.name,
@@ -57,6 +58,14 @@ export const updateWorker = (workerSid: string, opts: any) => {
       'departments': opts.departments,
       'contact_uri': `client:${opts.id}`,
     })
+  })
+}
+
+export const updateWorkerActivity = (workerSid: string, activity: string) => {
+  const activitySid = getActivityByName(activity);
+
+  return workspace.workers(workerSid).update({
+    activitySid,
   })
 }
 
