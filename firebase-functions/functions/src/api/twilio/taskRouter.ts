@@ -84,6 +84,7 @@ router.post('/updateWorkers', async (req, res, next) => {
   try {
     const usersList = await users.getAllUsers();
     const workers = await client.workers.list();
+    // let created = 0
 
     usersList.forEach(async (user) => {
       const worker = workers.find((worker:any) => {
@@ -100,6 +101,8 @@ router.post('/updateWorkers', async (req, res, next) => {
         await users.updateOne(user.id, {
           workerSid: result.sid
         })
+
+        // created++
       } else {
         await taskRouter.updateWorker(worker.sid, {
           id: user.id,
