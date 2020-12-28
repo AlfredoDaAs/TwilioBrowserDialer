@@ -14,6 +14,14 @@ const router = express.Router()
   }
 }); */
 
+/* router.get('/', async (req, res, next) => {
+  try {
+    
+  } catch (error) {
+    next(error)
+  }
+}) */
+
 router.get('/:callId', async (req, res, next) => {
   try {
     const callId = req.params.callId;
