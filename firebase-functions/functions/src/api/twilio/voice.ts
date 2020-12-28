@@ -127,7 +127,6 @@ router.post('/incoming', validateTwilioRequest, async (req: express.Request, res
 });
 
 router.post('/enqueue', validateTwilioRequest, async (req, res) => {
-  console.log('enqueue', req.body);
   const pressedKey = req.body.Digits;
   const voiceResponse = new VoiceResponse();
 
@@ -159,7 +158,7 @@ router.post('/assignment', validateTwilioRequest, (req, res) => {
   
   res.type('application/json');
   res.send({
-    instruction: "dequeue",
+    instruction: "conference",
     post_work_activity_sid: idle
   });
 });
