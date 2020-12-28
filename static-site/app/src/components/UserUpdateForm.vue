@@ -18,7 +18,7 @@ export default {
     ...mapGetters(["getDepartments"]),
     departments() {
       return this.getDepartments.map(dep => ({
-        value: dep.name.trim().toLowerCase().replace(' ', '_'),
+        value: dep.name.trim(),
         text: dep.name
       }));
     }
