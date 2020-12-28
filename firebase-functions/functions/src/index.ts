@@ -34,8 +34,6 @@ app.use('/auth', authValidation);
 // twilio endpoints
 app.use('/voice', voiceCrud);
 
-app.use('/taskRouter', taskRouter);
-
 // from here down app is protected by token
 app.use(apiValidation);
 app.use('/token', tokenCrud);
@@ -43,6 +41,7 @@ app.use('/users', usersCrud);
 app.use('/numbers', numbersCrud);
 app.use('/departments', deparmentsCrud);
 app.use('/calls', callsCrud);
+app.use('/taskRouter', taskRouter);
 
 app.use(function(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
     console.error(err.stack);
