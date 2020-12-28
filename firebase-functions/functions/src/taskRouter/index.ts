@@ -4,9 +4,9 @@ import departments from '../firestore/departments';
 
 const { idle, offline, bussy, reserved } = functions.config().twilio.workspace_activities;
 
-const accountSid = functions.config().twilio.accountsid;
-const authToken = functions.config().twilio.authtoken;
-const workspaceSid = functions.config().twilio.workspace_sid;
+const accountSid: string = functions.config().twilio.accountsid;
+const authToken: string = functions.config().twilio.authtoken;
+const workspaceSid: string = functions.config().twilio.workspace_sid;
 const url: String = functions.config().twilio.voiceurl
 
 const client = twilio(accountSid, authToken);
@@ -141,6 +141,36 @@ const createWorkflowConfig = async () => {
   };
 
   return JSON.stringify(config);
+}
+
+export const putOnHold = async (conferenceSid: string, participantSid: string) => {
+  return client.conferences(conferenceSid).participants(participantSid).update({
+    hold: true,
+    holdUrl: 'https://twimlets.com/holdmusic?Bucket=com.twilio.music.soft-rock'
+  })
+}
+
+export const transferCall = async (taskSid: string, condition: any) => {
+
+  const workflows = await workspace.workflows.list({ friendlyName: 'Main' });
+  const workflowSid = workflows[0].sid;
+
+  const task = await workspace.tasks(taskSid).fetch();
+
+  console.log('task attributes: ', task.attributes);
+  
+  const newAttributes = {
+    ...JSON.parse(task.attributes),
+    ...condition
+  }
+
+  newAttributes.conference.room_name = taskSid;
+
+  return workspace.tasks.create({
+    workflowSid: workflowSid,
+    attributes: JSON.stringify(newAttributes),
+    taskChannel: 'voice',
+  })
 }
 
 /* export const createWorkflowActivites = async () => {

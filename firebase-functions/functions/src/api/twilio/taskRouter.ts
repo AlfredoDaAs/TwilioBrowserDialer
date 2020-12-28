@@ -140,6 +140,43 @@ router.post('/batch/taskQueue', async (req, res, next) => {
   }
 })
 
+router.post('/putOnHold/:conferenceSid/:participantSid', async (req, res, next) => {
+  try {
+    const { conferenceSid, participantSid } = req.params;
+
+    const result = await taskRouter.putOnHold(conferenceSid, participantSid)
+
+    res.json({
+      callSid: result.callSid,
+      conferenceSid: result.conferenceSid
+    })
+  } catch (error) {
+    next(error);
+  }
+})
+
+router.post('/transfer', async (req, res, next) => {
+  try {
+    const { taskSid, department, agentId } = req.body; // conferenceSid, participantSid,
+
+    // await taskRouter.putOnHold(conferenceSid, participantSid);
+
+    const condition = {} as any
+
+    if(agentId) {
+      condition.contact_uri = `client:${agentId}`
+    } else if(department) {
+      condition.selected_department = department
+    }
+
+    const result = await taskRouter.transferCall(taskSid, condition)
+
+    res.json(result.sid)
+  } catch (error) {
+    next(error);
+  }
+})
+
 /* router.put('/task', async (req, res, next) => {
   try {
 
