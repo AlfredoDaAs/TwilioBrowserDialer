@@ -15,9 +15,8 @@ export default {
     },
   }),
   props: {
-    callId: {
-      type: String,
-      default: "",
+    callAttributes: {
+      type: Object
     },
   },
   validations: {
@@ -34,26 +33,14 @@ export default {
     },
   },
   watch: {
-    callId(newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.loadCallInfo();
+    callAttributes(newVal, oldVal) {
+      this.call = newVal;
+      if(Object.keys(newVal).length > 0) {
+        this.contactForm.phoneNumber = newVal.from
       }
     },
   },
   methods: {
-    async loadCallInfo() {
-      try {
-        if (this.callId !== null && this.callId !== "") {
-          const result = await axios.get(`calls/${this.callId}`);
-
-          if (result.data) {
-            this.call = result.data;
-          }
-        }
-      } catch (error) {
-        handleError(error, this, "danger");
-      }
-    },
     async saveContact() {
       try {
         this.$v.$touch();
@@ -91,8 +78,8 @@ export default {
   <div class="d-flex justify-content-between mb-2">
     <div>
       <h5 style="display: inline-block;" class="mr-3">Incoming Call:</h5>
-      <p v-if="call !== null" style="display: inline-block;">
-        From: {{ call.fromData.from }}, City: {{ call.fromData.city }}, Country: {{ call.fromData.country }}, State: {{ call.fromData.state }}, Zip: {{ call.fromData.zip }}
+      <p v-if="Object.keys(call).length > 0" style="display: inline-block;">
+        From: {{ call.from }}, City: {{ call.from_city }}, Country: {{ call.from_country }}, State: {{ call.from_state }}, Zip: {{ call.from_zip }}
       </p>
     </div>
     <b-button v-b-toggle.collapse-1 variant="primary">Store Contact</b-button>
