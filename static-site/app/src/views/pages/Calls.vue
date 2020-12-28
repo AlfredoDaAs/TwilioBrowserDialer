@@ -3,22 +3,24 @@ import { Device } from "twilio-client";
 import axios from "../../axios";
 import firebase from "firebase/app";
 import { mapGetters } from "vuex";
-import { handleError } from "../../handleErrors";
+import { handleError, handleMessage } from "../../handleErrors";
 import IncomingCallModal from "../../components/IncomingCallModal";
 import IncomingCallCard from "../../components/IncomingCallCard";
 import { initWorker } from "../../twilio";
+import CallStatus from '../../components/CallStatus';
+import TransferOption from '../../components/TransferOption';
 
 export default {
-  components: { IncomingCallModal, IncomingCallCard },
+  components: { IncomingCallModal, IncomingCallCard, CallStatus, TransferOption },
   name: "Calls",
   data: () => ({
+    calls: [],
     selectUser: null,
     onPhone: false,
     muted: false,
     log: "Connecting...",
     queueCalls: [],
     selectTransfer: null,
-    transferUsers: [],
     usersToCall: [],
     usersData: [],
     InConn: null,
@@ -27,7 +29,8 @@ export default {
     worker: null,
     reservation: null,
     available: false,
-    activity: 'Offline'
+    activity: 'Offline',
+    openTransfer: false,
   }),
   computed: mapGetters(["getUserId", "getPhoneNumber"]),
   methods: {
@@ -92,6 +95,14 @@ export default {
         this.onPhone = false;
       }
     },
+    hangUpAndCompleteTask() {
+      Device.disconnectAll();
+      if (this.reservation) {
+        this.reservation.task.complete();
+        // this.completeTask(this.reservation.task.sid);
+      }
+      this.onPhone = false;
+    },
     toggleMute() {
       this.muted = !this.muted;
       Device.activeConnection().mute(this.muted);
@@ -120,27 +131,6 @@ export default {
           this.queueCalls = sortedCalls;
         });
     },
-    listenUsers() {
-      firebase
-        .database()
-        .ref("users")
-        .on("value", (items) => {
-          let usersList = [];
-          items.forEach((item) => {
-            const key = item.key;
-            const data = item.val();
-            if (key !== this.getUserId && data.status === "online") {
-              usersList.push({
-                value: key,
-                text: data.name,
-              });
-            }
-          });
-
-          usersList.unshift({ value: null, text: "Transfer To" });
-          this.transferUsers = usersList;
-        });
-    },
     transferTo() {
       if (
         this.selectTransfer &&
@@ -167,13 +157,11 @@ export default {
     },
     listenIncomingCalls() {
       Device.on("incoming", (conn) => {
-        console.log(
-          "Incoming connection from ",
-          conn.customParameters.get("callId")
-        );
+        console.log("Incoming connection from ", conn);
 
         if (conn.direction === "INCOMING") {
           this.InConn = conn;
+          this.onPhone = true;
           this.showInCallModal = true;
         }
       });
@@ -200,15 +188,6 @@ export default {
         console.log(`Worker ${ready.sid} is now ready for work`);
         this.available = ready.available
         this.activity = ready.activityName
-        console.log(ready);
-      });
-
-      worker.update("ActivitySid", "WA3ebbf81a5d6a83b55472203d2c24bc08", function(err, worker) {
-          console.log(worker.sid);
-      });
-
-      worker.on('reservation.created', (reservation) => {
-        reservation.dequeue();
       });
 
       worker.on("reservation.accepted", (reservation) => {
@@ -224,30 +203,67 @@ export default {
         this.available = worker.available
         this.activity = worker.activityName
       })
+
+      worker.on('reservation.wrapup', () => {
+        this.reservation = null;
+      })
     },
-    completeTask(taskSid) {
-      console.log("taskSid", taskSid, this.worker);
-      this.worker.completeTask(taskSid, function (error, completedTask) {
-        if (error) {
-          console.log(error.code);
-          console.log(error.message);
-          return;
+    async getCallsHistory() {
+      try {
+        const result = await axios.get('/calls');
+
+        if(result.data) {
+          this.calls = result.data
         }
-        console.log("Completed Task: " + completedTask.assignmentStatus);
-      });
+      } catch (error) {
+        handleError(error, this, "danger");
+      }
     },
-    activityChange(val) {
+    async putOnHold() {
+      try {
+        const { conference } = this.reservation.task.attributes
+
+        if(conference) {
+          const result = await axios.post(`taskRouter/putOnHold/${conference.sid}/${conference.participants.customer}`)
+
+          console.log(result.data);
+        }
+      } catch (error) {
+        handleError(error, this, "danger");
+      }
+    },
+    async transfer(data) {
+      try {
+        const { conference } = this.reservation.task.attributes;
+        const taskSid = this.reservation.task.sid;
+
+        const result = await axios.post('taskRouter/transfer', {
+          conferenceSid: conference.sid,
+          participantSid: conference.participants.customer,
+          taskSid,
+          department: data.department,
+          agentId: data.agentId
+        })
+
+        this.hangUpAndCompleteTask();
+        this.openTransfer = false;
+        handleMessage('Transfer complete!', this, 'success');
+
+        console.log('transfer new task: ', result.data);
+      } catch (error) {
+        handleError(error, this, "danger");
+      }
     }
   },
   created() {
     this.getToken();
-    this.listenUsers();
     this.listenIncomingCalls();
+    // this.getCallsHistory();
   },
   async mounted() {
     await this.getUsers();
     this.getQueueCalls();
-  },
+  }
 };
 </script>
 
@@ -255,18 +271,14 @@ export default {
   <b-container fluid>
     <div class="d-flex">
       <b-card style="width: 100%" title="Calls">
-        <div class="d-flex mb-2">
-          <h5>Receive calls status: </h5>
-          <b-form-checkbox class="ml-2" disabled @change="activityChange" v-model="available" name="check-button" switch>
-            Available ({{ activity }})
-          </b-form-checkbox>
-        </div>
+        <call-status :activity="activity" :available="available" />
         <div id="outbound-calls" class="d-flex mb-3">
           <div class="mr-4">
             <b-form-select
               style="width: 360px"
               v-model="selectUser"
               :options="usersToCall"
+              :disabled="onPhone"
             ></b-form-select>
             <div style="display: inline-block">
               <b-button
@@ -291,38 +303,34 @@ export default {
               </b-button>
             </div>
           </div>
-          <div>
-            <b-form-select
-              style="width: 360px"
-              v-model="selectTransfer"
-              :options="transferUsers"
-            ></b-form-select>
-            <div style="display: inline-block">
-              <b-button class="mx-2" @click="transferTo">Transfer</b-button>
-            </div>
+          <div style="display: inline-block">
+            <b-button class="mx-2" :disabled="!reservation ? true : false" @click="openTransfer = true">Transfer</b-button>
           </div>
         </div>
         <hr />
-        <incoming-call-card
-          :callId="InConn ? InConn.customParameters.get('callId') : ''"
-        />
+        <incoming-call-card :call-attributes="reservation ? reservation.task.attributes : {}" />
         <b-table-simple>
           <b-thead>
             <b-tr>
-              <b-th>From</b-th>
-              <b-th>To</b-th>
+              <b-th>Contact</b-th>
               <b-th>Direction</b-th>
               <b-th>Date</b-th>
               <b-th>Time</b-th>
+              <b-th></b-th>
             </b-tr>
           </b-thead>
-          <b-tbody>
+          <!-- <b-tbody>
             <b-tr>
               <b-td></b-td>
               <b-td></b-td>
               <b-td></b-td>
               <b-td></b-td>
               <b-td></b-td>
+            </b-tr>
+          </b-tbody> -->
+          <b-tbody>
+            <b-tr>
+              <b-td colspan="5" class="text-center">No Data</b-td>
             </b-tr>
           </b-tbody>
         </b-table-simple>
@@ -334,6 +342,7 @@ export default {
       @onCancel="handleCancelCall"
       @onAccept="handleAcceptCall"
     />
+    <transfer-option @onTransfer="transfer" @onClose="openTransfer = false" :show="openTransfer" />
     <b-row class="mt-2">
       <b-col md="5">
         <b-card title="Queue Calls">
