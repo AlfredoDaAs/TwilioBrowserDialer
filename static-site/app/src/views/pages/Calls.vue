@@ -102,6 +102,7 @@ export default {
         // this.completeTask(this.reservation.task.sid);
       }
       this.onPhone = false;
+      this.getCallsHistory();
     },
     toggleMute() {
       this.muted = !this.muted;
@@ -258,7 +259,7 @@ export default {
   created() {
     this.getToken();
     this.listenIncomingCalls();
-    // this.getCallsHistory();
+    this.getCallsHistory();
   },
   async mounted() {
     await this.getUsers();
@@ -308,8 +309,7 @@ export default {
           </div>
         </div>
         <hr />
-        <incoming-call-card :call-attributes="reservation ? reservation.task.attributes : {}" />
-        <b-table-simple>
+        <b-table-simple sticky-header="800px">
           <b-thead>
             <b-tr>
               <b-th>Contact</b-th>
@@ -319,16 +319,16 @@ export default {
               <b-th></b-th>
             </b-tr>
           </b-thead>
-          <!-- <b-tbody>
-            <b-tr>
-              <b-td></b-td>
-              <b-td></b-td>
-              <b-td></b-td>
+          <b-tbody v-if="calls.length > 0">
+            <b-tr v-for="call in calls" :key="call.id">
+              <b-td>{{ call.from }}</b-td>
+              <b-td>{{ call.direction }}</b-td>
+              <b-td>{{ call.createdAt | formatDate }} </b-td>
               <b-td></b-td>
               <b-td></b-td>
             </b-tr>
-          </b-tbody> -->
-          <b-tbody>
+          </b-tbody>
+          <b-tbody v-else>
             <b-tr>
               <b-td colspan="5" class="text-center">No Data</b-td>
             </b-tr>
