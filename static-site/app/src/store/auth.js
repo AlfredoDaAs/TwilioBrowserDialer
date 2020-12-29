@@ -1,6 +1,6 @@
 import axios from '../axios'
 import firebase from "firebase/app";
-import { isOnlineForDatabase, isOfflineForDatabase } from '../firebase'
+import { isOfflineForDatabase } from '../firebase'
 import { destroyDevice } from '../twilio'
 
 const state = {
@@ -22,10 +22,6 @@ const actions = {
 
             const data = response.data
             if(data && data.status === 'ok') {
-                await firebase.database().ref(`users/${data.id}`).update({
-                    ...isOnlineForDatabase,
-                    name: data.name
-                })
                 commit('loginSuccess', data)
             }
         } catch (error) {
