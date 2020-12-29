@@ -35,7 +35,7 @@ export default {
     activity: 'Offline',
     openTransfer: false,
   }),
-  computed: mapGetters(["getUserId", "getPhoneNumber", "getName"]),
+  computed: mapGetters(["getUserId", "getPhoneNumber", "getFullName"]),
   filters: {
     formatDate(date) {
       return moment(date).format('YYYY-MM-DD hh:mm:ss a')
@@ -194,7 +194,7 @@ export default {
         const userState = ready.available ? isOnlineForDatabase : isOfflineForDatabase
         firebase.database().ref(`users/${this.getUserId}`).update({
             ...userState,
-            name: this.getName,
+            name: this.getFullName,
         })
       });
 
@@ -213,7 +213,7 @@ export default {
         const userState = worker.available ? isOnlineForDatabase : isOfflineForDatabase
         firebase.database().ref(`users/${this.getUserId}`).update({
             ...userState,
-            name: this.getName,
+            name: this.getFullName,
         })
       })
 

@@ -78,6 +78,10 @@ const getters = {
         return state.name && state.name.length > 0 ? `Welcome ${state.name}!` : 'User';
     },
 
+    getFullName: (state) => {
+      return state.name;
+    },
+
     getPhoneNumber: (state) => {
       return state.phoneNumber ? state.phoneNumber : '';
     }
