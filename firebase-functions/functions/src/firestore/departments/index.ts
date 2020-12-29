@@ -5,7 +5,7 @@ const collectionName = 'departments'
 class Collection extends AbstractCollection {
   public defaultValues: any = {
     name: null,
-    taskQueueSid: null,
+    taskQueueSid: null
   }
 
   public async getDeparments(): Promise<any[]> {

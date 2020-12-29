@@ -10,7 +10,7 @@ class Collection extends AbstractCollection {
     transfers: [],
     conferenceSid: null,
     callSid: null,
-    callTime: null,
+    callTime: null
   }
 
   public async getCallsOfNumber(number: string): Promise<any[]> {

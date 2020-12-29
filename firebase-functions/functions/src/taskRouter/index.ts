@@ -41,9 +41,9 @@ export const createWorker = (opts: any) => {
     friendlyName: opts.name,
     attributes: JSON.stringify({
       'departments': opts.departments,
-      'contact_uri': `client:${opts.id}`,
+      'contact_uri': `client:${opts.id}`
     }),
-    activitySid: offline,
+    activitySid: offline
   })
 }
 
@@ -56,7 +56,7 @@ export const updateWorker = (workerSid: string, opts: any) => {
     friendlyName: opts.name,
     attributes: JSON.stringify({
       'departments': opts.departments,
-      'contact_uri': `client:${opts.id}`,
+      'contact_uri': `client:${opts.id}`
     })
   })
 }
@@ -65,7 +65,7 @@ export const updateWorkerActivity = (workerSid: string, activity: string) => {
   const activitySid = getActivityByName(activity);
 
   return workspace.workers(workerSid).update({
-    activitySid,
+    activitySid
   })
 }
 
@@ -74,7 +74,7 @@ export const createTaskQueue = (dept:any, isDefault = false) => {
     friendlyName: dept.name,
     targetWorkers: !isDefault ? `departments HAS "${dept.name}"` : '1==1',
     assignmentActivitySid: bussy,
-    reservationActivitySid: reserved,
+    reservationActivitySid: reserved
   })
 }
 
@@ -98,9 +98,9 @@ export const createWorkflow = async () => {
     workflowSid: workflow.sid,
     activities: {
       idle,
-      offline,
+      offline
     },
-    workspaceSid,
+    workspaceSid
   }
 }
 
@@ -115,7 +115,7 @@ const createWorkflowConfig = async () => {
   const defaultTarget = {
     queue: queues.find(queue => queue.friendlyName === 'Default')?.sid,
     timeout: 900,
-    priority: 1,
+    priority: 1
   };
 
   const rules = [];
@@ -124,7 +124,7 @@ const createWorkflowConfig = async () => {
     const target = {
       queue: queues.find(queue => queue.friendlyName === dept.name)?.sid,
       timeout: 900,
-      priority: 5,
+      priority: 5
     }
   
     rules.push({
@@ -136,8 +136,8 @@ const createWorkflowConfig = async () => {
   const config = {
     task_routing: {
       filters: rules,
-      default_filter: defaultTarget,
-    },
+      default_filter: defaultTarget
+    }
   };
 
   return JSON.stringify(config);
@@ -169,7 +169,7 @@ export const transferCall = async (taskSid: string, condition: any) => {
   return workspace.tasks.create({
     workflowSid: workflowSid,
     attributes: JSON.stringify(newAttributes),
-    taskChannel: 'voice',
+    taskChannel: 'voice'
   })
 }
 

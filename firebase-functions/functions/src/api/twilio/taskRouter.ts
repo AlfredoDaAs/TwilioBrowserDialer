@@ -71,10 +71,10 @@ router.put('/worker', async (req, res, next) => {
 
     const activitySid = taskRouter.getActivityByName(activity);
 
-    client.workers(workerSid).update({
-      activitySid,
+    await client.workers(workerSid).update({
+      activitySid
     })
-    
+
   } catch (error) {
     next(error);
   }
@@ -87,8 +87,8 @@ router.post('/updateWorkers', async (req, res, next) => {
     // let created = 0
 
     usersList.forEach(async (user) => {
-      const worker = workers.find((worker:any) => {
-        return JSON.parse(worker.attributes).contact_uri === `client:${user.id}`
+      const worker = workers.find((w:any) => {
+        return JSON.parse(w.attributes).contact_uri === `client:${user.id}`
       })
 
       if(!worker) {

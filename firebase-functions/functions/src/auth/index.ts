@@ -46,7 +46,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
                 email: user.email,
                 isAdmin: user.isAdmin,
                 phoneNumber: user.phoneNumber,
-                workerSid: user.workerSid,
+                workerSid: user.workerSid
               },
               functions.config().jwt.key, { expiresIn: functions.config().jwt.expires })
 

@@ -29,7 +29,7 @@ const validateTwilioRequest = (req: express.Request, res: express.Response, next
     const requestIsValid = twilio.validateRequest(
       functions.config().twilio.authtoken,
       twilioSignature,
-      `${url}${req.path}${req.path === '/incoming' ? `?clientName=${req.query.clientName}` : ''}`,
+      `${url}${req.path}`, // ${req.path === '/incoming' ? `?clientName=${req.query.clientName}` : ''}
       params
     )
 
@@ -87,6 +87,7 @@ router.post('/incoming', validateTwilioRequest, async (req: express.Request, res
     gather.say({
       loop: 10
     }, say)
+
   }
   else {
     const workflows = await workspace.workflows.list({ friendlyName: 'Main' });
@@ -114,17 +115,23 @@ router.post('/enqueue', validateTwilioRequest, async (req, res) => {
 
   depts.push('Default');
 
-  const selectedOpt = depts[Number(pressedKey) + 1];
+  const selectedOpt = depts[Number(pressedKey) - 1];
 
-  const workflows = await workspace.workflows.list({ friendlyName: 'Main' });
-  const workflowSid = workflows[0].sid;
+  if(selectedOpt) {
+    const workflows = await workspace.workflows.list({ friendlyName: 'Main' });
+    const workflowSid = workflows[0].sid;
 
-  const enqueue = voiceResponse.enqueue({
-    workflowSid,
-    waitUrl: 'https://twimlets.com/holdmusic?Bucket=com.twilio.music.soft-rock'
-  });
+    const enqueue = voiceResponse.enqueue({
+      workflowSid,
+      waitUrl: 'https://twimlets.com/holdmusic?Bucket=com.twilio.music.soft-rock'
+    });
 
-  enqueue.task(JSON.stringify({ selected_department: selectedOpt }));
+    enqueue.task(JSON.stringify({ selected_department: selectedOpt }));
+  } else {
+    voiceResponse.say('Invalid option, please select a valid option')
+    voiceResponse.pause()
+    voiceResponse.redirect(`${url}/incoming`)
+  }
 
   res.type('text/xml');
   res.send(voiceResponse.toString());
@@ -151,12 +158,10 @@ router.post('/events', validateTwilioRequest, async (req, res) => {
         Message: 'Sorry, All agents are busy. Please leave a message. We\'ll call you as soon as possible',
         Email: process.env.MISSED_CALLS_EMAIL_ADDRESS});
       const voicemailUrl = util.format("http://twimlets.com/voicemail?%s", query);
-      twilioClient.calls(taskAttributes.call_sid).update({
+      return twilioClient.calls(taskAttributes.call_sid).update({
         method: 'POST',
         url: voicemailUrl
       });
-
-      return Q.resolve({});
     },
     'task.wrapup': function () {
       return Q.resolve({});

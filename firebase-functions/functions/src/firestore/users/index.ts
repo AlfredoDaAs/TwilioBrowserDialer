@@ -14,7 +14,7 @@ class Collection extends AbstractCollection {
         picture: null,
         isAdmin: false,
         departments: [],
-        workerSid: null,
+        workerSid: null
     }
 
     public async findByEmail (email: String): Promise<any> {

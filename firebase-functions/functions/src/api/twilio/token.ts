@@ -19,15 +19,15 @@ const version = 'v1';
 
 // Helper function to create Policy
 const buildWorkspacePolicy = (options: any, postFilter = {}) => {
-  options = options || {};
-  var resources = options.resources || [];
-  var urlComponents = [TASKROUTER_BASE_URL, version, 'Workspaces', workspaceSid]
+  const newOptions = options || {};
+  const resources = newOptions.resources || [];
+  const urlComponents = [TASKROUTER_BASE_URL, version, 'Workspaces', workspaceSid]
 
   return new Policy({
     url: urlComponents.concat(resources).join('/'),
-    method: options.method || 'GET',
+    method: newOptions.method || 'GET',
     allow: true,
-    postFilter,
+    postFilter
   });
 }
 
@@ -65,7 +65,7 @@ router.get('/:id', async (request, response, next) => {
       // workers update activity
       // buildWorkspacePolicy({ resources: ['Workers', user.workerSid, '**'], method: 'POST' }, { ActivitySid: { required: true } }),
       // task update
-      buildWorkspacePolicy({ resources: ['Tasks', '**'], method: 'POST' }, { AssignmentStatus: { required: true } }),
+      buildWorkspacePolicy({ resources: ['Tasks', '**'], method: 'POST' }, { AssignmentStatus: { required: true } })
     ];
 
     eventBridgePolicies.concat(workerPolicies).concat(workspacePolicies).forEach((policy) => {

@@ -96,7 +96,7 @@ router.delete('/:id', adminMiddleware, async (req, res, next) => {
     }
 
     const result = await users.hardDelete(id);
-    if(user.workerSid) taskRouter.deleteworker(user.workerSid);
+    if(user.workerSid) await taskRouter.deleteworker(user.workerSid);
 
     return res.json(result)
   } catch (error) {
