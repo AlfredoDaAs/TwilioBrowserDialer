@@ -1,15 +1,17 @@
 <script>
-import { Device } from "twilio-client";
-import axios from "../../axios";
 import firebase from "firebase/app";
+import { Device } from "twilio-client";
 import { mapGetters } from "vuex";
 import moment from 'moment'
+
+import axios from "../../axios";
 import { handleError, handleMessage } from "../../handleErrors";
 import IncomingCallModal from "../../components/IncomingCallModal";
 import IncomingCallCard from "../../components/IncomingCallCard";
 import { initWorker } from "../../twilio";
 import CallStatus from '../../components/CallStatus';
 import TransferOption from '../../components/TransferOption';
+import { isOnlineForDatabase, isOfflineForDatabase } from '../../firebase'
 
 export default {
   components: { IncomingCallModal, IncomingCallCard, CallStatus, TransferOption },
@@ -33,6 +35,7 @@ export default {
     activity: 'Offline',
     openTransfer: false,
   }),
+  computed: mapGetters(["getUserId", "getPhoneNumber", "getName"]),
   filters: {
     formatDate(date) {
       return moment(date).format('YYYY-MM-DD hh:mm:ss a')
@@ -91,13 +94,7 @@ export default {
           this.log = "Calling " + n;
         }
       } else {
-        // hang up call in progress
-        Device.disconnectAll();
-        if (this.reservation) {
-          this.reservation.task.complete();
-          // this.completeTask(this.reservation.task.sid);
-        }
-        this.onPhone = false;
+        this.hangUpAndCompleteTask();
       }
     },
     hangUpAndCompleteTask() {
@@ -194,6 +191,11 @@ export default {
         console.log(`Worker ${ready.sid} is now ready for work`);
         this.available = ready.available
         this.activity = ready.activityName
+        const userState = ready.available ? isOnlineForDatabase : isOfflineForDatabase
+        firebase.database().ref(`users/${this.getUserId}`).update({
+            ...userState,
+            name: this.getName,
+        })
       });
 
       worker.on("reservation.accepted", (reservation) => {
@@ -208,6 +210,11 @@ export default {
       worker.on('activity.update', (worker) => {
         this.available = worker.available
         this.activity = worker.activityName
+        const userState = worker.available ? isOnlineForDatabase : isOfflineForDatabase
+        firebase.database().ref(`users/${this.getUserId}`).update({
+            ...userState,
+            name: this.getName,
+        })
       })
 
       worker.on('reservation.wrapup', () => {
@@ -314,6 +321,7 @@ export default {
           </div>
         </div>
         <hr />
+        <incoming-call-card :call-attributes="reservation && reservation.task ? reservation.task.attributes : {}" />
         <b-table-simple sticky-header="800px">
           <b-thead>
             <b-tr>
@@ -348,7 +356,7 @@ export default {
       @onAccept="handleAcceptCall"
     />
     <transfer-option @onTransfer="transfer" @onClose="openTransfer = false" :show="openTransfer" />
-    <b-row class="mt-2">
+    <!-- <b-row class="mt-2">
       <b-col md="5">
         <b-card title="Queue Calls">
           <b-list-group>
@@ -378,6 +386,6 @@ export default {
           </b-list-group>
         </b-card>
       </b-col>
-    </b-row>
+    </b-row> -->
   </b-container>
 </template>
