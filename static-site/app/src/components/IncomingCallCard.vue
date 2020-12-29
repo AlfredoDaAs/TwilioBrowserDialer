@@ -49,7 +49,7 @@ export default {
           return;
         }
 
-        const cleanPhoneNumber = `+${this.phoneNumber.trim().replace(/\w|\s|\.|,|&/g, '')}`
+        const cleanPhoneNumber = `+${this.phoneNumber.trim().replace(/[a-zA-Z_-]|\s|\.|,|&/g, '')}`
         const result = await axios.post("contacts", {
           ...this.contactForm,
           phoneNumber: cleanPhoneNumber

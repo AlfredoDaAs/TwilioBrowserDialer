@@ -1,6 +1,6 @@
 <script>
 import axios from "../axios";
-import { required, email, numeric, minValue } from "vuelidate/lib/validators";
+import { required, email, minValue } from "vuelidate/lib/validators";
 import { handleError } from "../handleErrors";
 import { log } from "util";
 import { mapGetters } from 'vuex'
@@ -41,7 +41,7 @@ export default {
       required,
     },
     phoneNumber: {
-      numeric,
+      required,
     },
     selectedDepts: {
       required,
@@ -63,6 +63,7 @@ export default {
           if (result.data) {
             const user = result.data;
 
+            console.log('user', user);
             this.name = user.name;
             this.lastName = user.lastName;
             this.email = user.email;
@@ -84,10 +85,12 @@ export default {
         if (this.$v.$invalid) {
           handleError(new Error("Missing required fields"), this, "danger");
         } else {
+          const cleanPhoneNumber = `+${this.phoneNumber.trim().replace(/[a-zA-Z_-]|\s|\.|,|&/g, '')}`
+
           const result = await axios.put(`users/${this.id}`, {
             name: this.name,
             lastName: this.lastName,
-            phoneNumber: this.phoneNumber,
+            phoneNumber: cleanPhoneNumber,
             departments: this.selectedDepts,
           });
 
@@ -131,7 +134,7 @@ export default {
     <b-row>
       <b-col md="6" sm="12">
         <b-form-input
-          v-model="name"
+          v-model="$v.name.$model"
           type="text"
           required
           placeholder="Enter name"
@@ -140,7 +143,7 @@ export default {
       </b-col>
       <b-col md="6" sm="12">
         <b-form-input
-          v-model="lastName"
+          v-model="$v.lastName.$model"
           type="text"
           required
           placeholder="Enter lastName"
@@ -158,7 +161,7 @@ export default {
         >
           <b-form-select
             id="depts-select"
-            v-model="selectedDepts"
+            v-model="$v.selectedDepts.$model"
             :options="departments"
             multiple
             :select-size="5"
@@ -168,10 +171,7 @@ export default {
       </b-col>
       <b-col md="6" sm="12">
         <b-form-input
-          min="10"
-          v-model="phoneNumber"
-          type="number"
-          required
+          v-model="$v.phoneNumber.$model"
           placeholder="Enter number"
           :state="$v.phoneNumber.$dirty ? !$v.phoneNumber.$error : null"
         ></b-form-input>
