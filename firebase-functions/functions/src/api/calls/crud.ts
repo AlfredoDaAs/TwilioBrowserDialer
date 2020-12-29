@@ -14,13 +14,15 @@ const router = express.Router()
   }
 }); */
 
-/* router.get('/', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
-    
+    const result = await calls.getCalls();
+
+    res.json(result)
   } catch (error) {
     next(error)
   }
-}) */
+})
 
 router.get('/:callId', async (req, res, next) => {
   try {

@@ -28,6 +28,12 @@ class Collection extends AbstractCollection {
 
     return results.map((doc:any) => doc.data())
   }
+
+  public async getCalls(): Promise<any[]> {
+    const results = (await this.collection.limit(20).orderBy('createdAt', 'desc').get()).docs
+
+    return results.map((doc:any) => doc.data())
+  }
 }
 
 export default new Collection(collectionName)
