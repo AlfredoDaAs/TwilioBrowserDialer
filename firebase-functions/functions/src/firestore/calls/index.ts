@@ -4,23 +4,13 @@ const collectionName = 'calls'
 
 class Collection extends AbstractCollection {
   public defaultValues: any = {
-    fromData: {
-      from: null,
-      city: null,
-      country: null,
-      state: null,
-      zip: null
-    },
-    toData: {
-      to: null,
-      city: null,
-      country: null,
-      state: null,
-      zip: null
-    },
+    from: null,
+    to: null,
     direction: 'inbound' || 'outbound',
     transfers: [],
-    callSid: null
+    conferenceSid: null,
+    callSid: null,
+    callTime: null,
   }
 
   public async getCallsOfNumber(number: string): Promise<any[]> {
