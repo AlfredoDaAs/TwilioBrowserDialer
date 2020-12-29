@@ -17,6 +17,7 @@ import taskRouter from './api/twilio/taskRouter'
 import usersCrud from './api/users/crud'
 import deparmentsCrud from './api/deparments/crud'
 import callsCrud from './api/calls/crud'
+import contactsCrud from './api/contacts/crud'
 
 //initialize firebase app
 initializeFirebase();
@@ -42,6 +43,7 @@ app.use('/numbers', numbersCrud);
 app.use('/departments', deparmentsCrud);
 app.use('/calls', callsCrud);
 app.use('/taskRouter', taskRouter);
+app.use('/contacts', contactsCrud);
 
 app.use(function(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
     console.error(err.stack);
