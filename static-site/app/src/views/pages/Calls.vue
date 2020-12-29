@@ -3,6 +3,7 @@ import { Device } from "twilio-client";
 import axios from "../../axios";
 import firebase from "firebase/app";
 import { mapGetters } from "vuex";
+import moment from 'moment'
 import { handleError, handleMessage } from "../../handleErrors";
 import IncomingCallModal from "../../components/IncomingCallModal";
 import IncomingCallCard from "../../components/IncomingCallCard";
@@ -32,7 +33,11 @@ export default {
     activity: 'Offline',
     openTransfer: false,
   }),
-  computed: mapGetters(["getUserId", "getPhoneNumber"]),
+  filters: {
+    formatDate(date) {
+      return moment(date).format('YYYY-MM-DD hh:mm:ss a')
+    }
+  },
   methods: {
     async getUsers() {
       try {
