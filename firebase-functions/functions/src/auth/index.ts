@@ -42,7 +42,7 @@ router.post('/', async (req: express.Request, res: express.Response) => {
             const jwtToken = jwt.sign(
               {
                 id: user.id,
-                name: user.name,
+                name: `${user.name} ${user.lastName}`,
                 email: user.email,
                 isAdmin: user.isAdmin,
                 phoneNumber: user.phoneNumber,
