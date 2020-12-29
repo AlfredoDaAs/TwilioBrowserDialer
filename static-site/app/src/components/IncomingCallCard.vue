@@ -78,7 +78,7 @@ export default {
   <div class="d-flex justify-content-between mb-2">
     <div>
       <h5 style="display: inline-block;" class="mr-3">Incoming Call:</h5>
-      <p v-if="Object.keys(call).length > 0" style="display: inline-block;">
+      <p v-if="call && Object.keys(call).length > 0" style="display: inline-block;">
         From: {{ call.from }}, City: {{ call.from_city }}, Country: {{ call.from_country }}, State: {{ call.from_state }}, Zip: {{ call.from_zip }}
       </p>
     </div>
