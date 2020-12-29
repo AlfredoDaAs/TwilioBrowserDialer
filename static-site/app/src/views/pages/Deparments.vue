@@ -1,7 +1,7 @@
 <script>
 import axios from "../../axios";
 import DeparmentsCreateForm from "../../components/DeparmentsCreateForm";
-import { handleError } from "../../handleErrors";
+import { handleMessage, handleError } from "../../handleErrors";
 import DepartmentDeleteForm from '../../components/DepartmentDeleteForm';
 
 export default {
@@ -12,6 +12,7 @@ export default {
   },
   data() {
     return {
+      creatingTQs: false,
       showDelModal: false,
       department: null,
       departments: [],
@@ -68,6 +69,20 @@ export default {
     hideDelModal() {
       this.showDelModal =  false
       this.department = {}
+    },
+    async createTaskQueues() {
+      try {
+        this.creatingTQs = true;
+        const result = await axios.post('/taskRouter/batch/taskQueue');
+
+        this.creatingTQs = false;
+        if(result.data) {
+          const created = result.data.created
+          handleMessage(`${created} TaskQueues created`, this, 'success');
+        }
+      } catch (error) {
+        handleError(error, this, "danger");
+      }
     }
   },
   mounted() {
@@ -77,7 +92,16 @@ export default {
 </script>
 
 <template>
-  <b-container>
+  <b-container fluid>
+    <div class="d-flex mb-3">
+      <b-card class="text-left">
+        <p>Script to generate a TaskQueue for each department</p>
+        <b-button @click="createTaskQueues" :disabled="creatingTQs" variant="outline-info">
+          <b-spinner v-if="creatingTQs" small></b-spinner>
+          Create TaskQueues
+        </b-button>
+      </b-card>
+    </div>
     <department-delete-form :show="showDelModal" :department="department ? department : {}" @onDelete="onDelete" @onCancel="hideDelModal" />
     <b-card title="Departments">
       <b-row>
