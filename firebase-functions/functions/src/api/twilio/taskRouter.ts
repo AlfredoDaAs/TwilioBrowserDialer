@@ -160,9 +160,9 @@ router.post('/putOnHold/:conferenceSid/:participantSid', async (req, res, next) 
 
 router.post('/transfer', async (req, res, next) => {
   try {
-    const { taskSid, department, agentId } = req.body; // conferenceSid, participantSid,
+    const { conferenceSid, participantSid, taskSid, department, agentId } = req.body;
 
-    // await taskRouter.putOnHold(conferenceSid, participantSid);
+    await taskRouter.putOnHold(conferenceSid, participantSid);
 
     const condition = {} as any
 
