@@ -85,7 +85,7 @@ export default {
         if (this.$v.$invalid) {
           handleError(new Error("Missing required fields"), this, "danger");
         } else {
-          const cleanPhoneNumber = `+${this.phoneNumber.trim().replace(/[a-zA-Z_-]|\s|\.|,|&/g, '')}`
+          const cleanPhoneNumber = `${this.phoneNumber.startsWith('+') ? '' : '+'}${this.phoneNumber.trim().replace(/[a-zA-Z_-]|\s|\.|,|&/g, '')}`
 
           const result = await axios.put(`users/${this.id}`, {
             name: this.name,

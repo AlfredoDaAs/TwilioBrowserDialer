@@ -49,7 +49,7 @@ export default {
           return;
         }
 
-        const cleanPhoneNumber = `+${this.phoneNumber.trim().replace(/[a-zA-Z_-]|\s|\.|,|&/g, '')}`
+        const cleanPhoneNumber = `${this.contactForm.phoneNumber.startsWith('+') ? '' : '+'}${this.contactForm.phoneNumber.trim().replace(/[a-zA-Z_-]|\s|\.|,|&/g, '')}`
         const result = await axios.post("contacts", {
           ...this.contactForm,
           phoneNumber: cleanPhoneNumber
@@ -57,6 +57,7 @@ export default {
 
         if (result.data) {
           handleMessage("Contact created!", this, "success");
+          this.$v.$reset();
         }
       } catch (error) {
         handleError(error, this, "danger");
