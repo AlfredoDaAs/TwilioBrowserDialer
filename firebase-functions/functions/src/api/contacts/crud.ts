@@ -43,4 +43,46 @@ router.post('/', async (req, res, next) => {
   }
 });
 
+router.put('/:id', async (req, res, next) => {
+  try {
+    const { body } = req
+
+    if (!body.firstName
+      || !body.lastName
+      || !body.phoneNumber) {
+      return next(new Error('Missing required fields (firstName, lastName, phoneNumber)'))
+    }
+
+    const { id } = req.params
+    const contact = await contacts.readOne(id)
+
+    if(!contact) {
+      return next(new Error('No contact was found'))
+    }
+
+    const result = await contacts.updateOne(contact.id, {
+      firstName: body.firstName,
+      lastName: body.lastName,
+      phoneNumber: body.phoneNumber,
+      company: body.company
+    })
+    
+    res.json(result)
+  } catch (error) {
+    next(error);
+  }
+})
+
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    const result = await contacts.hardDelete(id)
+
+    res.json(result)
+  } catch (error) {
+    next(error);
+  }
+})
+
 export default router;

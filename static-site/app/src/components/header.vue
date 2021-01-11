@@ -25,6 +25,7 @@ export default {
         <b-navbar-nav class="ml-auto">
           <b-nav-item to="users" v-if="isAdmin"> Users </b-nav-item>
           <b-nav-item to="departments" v-if="isAdmin"> Deparments </b-nav-item>
+          <b-nav-item to="contacts"> Contacts </b-nav-item>
           <b-nav-item to="numbers"> Phone Numbers </b-nav-item>
           <b-nav-item to="calls"> Calls </b-nav-item>
           <b-nav-item-dropdown :text="getName" right>

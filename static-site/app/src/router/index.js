@@ -36,6 +36,11 @@ const routes = [
         meta: {
           is_admin: true // protects admin views from normal users
         },
+      },
+      {
+        path: '/contacts',
+        name: 'contacts',
+        component: () => import('../views/pages/Contacts'),
       }
     ]
   },
