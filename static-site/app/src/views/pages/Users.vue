@@ -172,7 +172,7 @@ export default {
     <user-create-form @onSubmitted="userCreated" />
     <div id="search-for-section">
       <div class="d-flex">
-        <h3>Search for a User</h3>
+        <h3>Users</h3>
       </div>
       <div>
         <vue-good-table
