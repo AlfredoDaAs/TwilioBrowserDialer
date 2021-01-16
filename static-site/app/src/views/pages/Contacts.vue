@@ -143,6 +143,6 @@ export default {
     </vue-good-table>
     <contact-create-form :show="createModal" @onClose="onCreateClose" @onSubmitted="onCreateSubmit" />
     <contact-edit-form :contact="selectedContact" :show="editModal" @onClose="onEditClose" @onSubmitted="onEditSubmit" />
-    <contact-delete-form :contact="selectedContact" :show="deleteModal" @onClose="onDeleteClose" @onSubmitted="onDeleteClose" />
+    <contact-delete-form :contact="selectedContact" :show="deleteModal" @onClose="onDeleteClose" @onSubmitted="onDeleteSubmit" />
   </b-container>
 </template>
