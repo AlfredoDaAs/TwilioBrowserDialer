@@ -24,6 +24,17 @@ router.get('/', async (req, res, next) => {
   }
 })
 
+router.get('/from/:from', async (req, res, next) => {
+  try {
+    const { from } = req.params
+    const result = await calls.getCallsOfNumber(from)
+
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+})
+
 router.get('/:callId', async (req, res, next) => {
   try {
     const callId = req.params.callId;
