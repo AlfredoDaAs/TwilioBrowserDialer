@@ -2,7 +2,7 @@ import { Device } from 'twilio-client';
 
 export const initDevice = (token) => {
   Device.setup(token, {
-    debug: true,
+    debug: false,
     enableRingingState: true
   })
 
@@ -18,7 +18,7 @@ export const destroyDevice = () => {
 
 export function initWorker(token) {
   try {
-    return new Twilio.TaskRouter.Worker(token); 
+    return new Twilio.TaskRouter.Worker(token, false);
   } catch (error) {
     console.error(error);
   }
