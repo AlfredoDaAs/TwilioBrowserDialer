@@ -41,7 +41,12 @@ const routes = [
         path: '/contacts',
         name: 'contacts',
         component: () => import('../views/pages/Contacts'),
-      }
+      },
+      {
+        path: '/history',
+        name: 'history',
+        component: () => import('../views/pages/History'),
+      },
     ]
   },
   {
