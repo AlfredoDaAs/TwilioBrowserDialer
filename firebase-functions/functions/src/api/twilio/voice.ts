@@ -62,7 +62,22 @@ router.post('/outbound', validateTwilioRequest, async (req: express.Request, res
   res.send(voiceResponse.toString());
 });
 
+router.post('/outbound/callback', validateTwilioRequest, async (req, res) => {
+  const { CallSid, CallDuration, CallStatus } = req.body
 
+  const eventHandler = {
+    'completed': async () => {
+      const call = await calls.getCallBySid(CallSid)
+      return await calls.updateOne(call.id, {
+        callDuration: CallDuration
+      })
+    },
+    'default': () => { return Q.resolve({}); }
+  } as any
+
+  await (eventHandler[CallStatus] || eventHandler['default'])()
+  res.json({})
+})
 
 router.post('/incoming', validateTwilioRequest, async (req: express.Request, res: express.Response) => {
   const voiceResponse = new VoiceResponse();
@@ -174,6 +189,15 @@ router.post('/events', validateTwilioRequest, async (req, res) => {
         conferenceSid: taskAttributes.conference.sid,
         callSid:  taskAttributes.call_sid,
         direction: 'inbound'
+      })
+    },
+    'task.completed': async () => {
+      console.log('task.completed', req.body);
+      const callWorker = await twilioClient.calls(taskAttributes.conference.participants.worker).fetch()
+      const callDoc = await calls.getCallBySid(taskAttributes.call_sid)
+
+      return await calls.updateOne(callDoc.id, {
+        callDuration: callWorker.duration
       })
     },
     'default': () => { return Q.resolve({}); }
