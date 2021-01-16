@@ -13,10 +13,16 @@ import CallStatus from '../../components/CallStatus';
 import TransferOption from '../../components/TransferOption';
 import { isOnlineForDatabase, isOfflineForDatabase } from '../../firebase'
 
+function str_pad_left(string,pad,length) {
+  return (new Array(length+1).join(pad)+string).slice(-length);
+}
+
 export default {
   components: { IncomingCallModal, IncomingCallCard, CallStatus, TransferOption },
   name: "Calls",
   data: () => ({
+    callTo: null,
+    callNumber: null,
     calls: [],
     selectUser: null,
     onPhone: false,
@@ -39,31 +45,44 @@ export default {
   filters: {
     formatDate(date) {
       return moment(date).format('YYYY-MM-DD hh:mm:ss a')
+    },
+    formatCallDuration(duration) {
+      if(!duration) return '00:00:00'
+
+      const time = Number(duration)
+      const hours = Math.floor(time / 3600)
+      const minutes = Math.floor(time / 60)
+      const seconds = time % 60;
+
+      return str_pad_left(hours,'0',2)+':'+str_pad_left(minutes,'0',2)+':'+str_pad_left(seconds,'0',2);
     }
   },
   methods: {
     async getUsers() {
       try {
-        const result = await axios.get("/users");
+        const usersData = await axios.get("/users");
+        const contactsData = await axios.get('/contacts');
 
-        if (result.data) {
-          const users = result.data;
+        if(usersData.data) {
+          usersData.data.forEach((user) => {
+            if(user.phoneNumber) {
+              this.usersToCall.push({
+                label: `Usr: ${user.name} ${user.lastName} (${user.phoneNumber})`,
+                phoneNumber: user.phoneNumber
+              })
+            }
+          })
+        }
 
-          users.forEach((user) => {
-            this.usersData[user.id] = user;
-          });
-
-          let userOptions = users.map((user) => ({
-            value: user.id,
-            text: `${user.name} ${user.lastName}`,
-          }));
-
-          userOptions.unshift({ value: null, text: "Call to..." });
-
-          userOptions = userOptions.filter(
-            (opt) => opt.value !== this.getUserId
-          );
-          this.usersToCall = userOptions;
+        if(contactsData.data) {
+          contactsData.data.forEach((user) => {
+            if(user.phoneNumber) {
+              this.usersToCall.push({
+                label: `Cont: ${user.firstName} ${user.lastName} (${user.phoneNumber})`,
+                phoneNumber: user.phoneNumber
+              })
+            }
+          })
         }
       } catch (error) {
         handleError(error, this, "danger");
@@ -79,20 +98,25 @@ export default {
       }
     },
     toggleCall() {
-      if (!this.onPhone && this.selectUser) {
-        const user = this.usersData[this.selectUser];
-        if (user) {
-          this.muted = false;
-          this.onPhone = true;
-          // make outbound call with current number
-          var n = "+" + user.phoneNumber.replace(/\D/g, "");
-          this.OutConn = Device.connect({
-            To: n,
-            callerId: this.getPhoneNumber,
-            agent: this.getUserId,
-          });
-          this.log = "Calling " + n;
+      if (!this.onPhone && (this.callTo || this.callNumber)) {
+        let phoneNumber = ''
+        if(this.callNumber) {
+          phoneNumber = `${this.callNumber.startsWith('+') ? '' : '+'}${this.callNumber.trim().replace(/[a-zA-Z_-]|\s|\.|,|&/g, '')}`
+        } else {
+          phoneNumber = this.callTo
         }
+
+        this.muted = false;
+        this.onPhone = true;
+        // make outbound call with current number
+        var n = "+" + phoneNumber.replace(/\D/g, "");
+        this.getCallsHistory(n)
+        this.OutConn = Device.connect({
+          To: n,
+          callerId: this.getPhoneNumber,
+          agent: this.getUserId,
+        });
+        this.log = "Calling " + n;
       } else {
         this.hangUpAndCompleteTask();
       }
@@ -104,7 +128,7 @@ export default {
         // this.completeTask(this.reservation.task.sid);
       }
       this.onPhone = false;
-      this.getCallsHistory();
+      this.calls = []
     },
     toggleMute() {
       this.muted = !this.muted;
@@ -160,8 +184,6 @@ export default {
     },
     listenIncomingCalls() {
       Device.on("incoming", (conn) => {
-        console.log("Incoming connection from ", conn);
-
         if (conn.direction === "INCOMING") {
           this.InConn = conn;
           this.onPhone = true;
@@ -173,6 +195,7 @@ export default {
         this.onPhone = false;
         this.InConn = null;
         this.OutConn = null;
+        this.calls = []
       });
     },
     handleCancelCall() {
@@ -200,6 +223,7 @@ export default {
 
       worker.on("reservation.accepted", (reservation) => {
         this.reservation = reservation;
+        this.getCallsHistory(reservation.task.attributes.from);
         /* console.log(reservation.task.attributes); // {foo: 'bar', baz: 'bang' }
         console.log(reservation.task.priority); // 1
         console.log(reservation.task.age); // 300
@@ -221,9 +245,9 @@ export default {
         this.reservation = null;
       })
     },
-    async getCallsHistory() {
+    async getCallsHistory(from) {
       try {
-        const result = await axios.get('/calls');
+        const result = await axios.get(`/calls/from/${from}`);
 
         if(result.data) {
           this.calls = result.data
@@ -266,12 +290,21 @@ export default {
       } catch (error) {
         handleError(error, this, "danger");
       }
+    },
+    onCallToInput(value) {
+      if(value && this.callNumber !== null) {
+        this.callNumber = null;
+      }
+    },
+    onCallNumberInput(value) {
+      if(value && this.callTo !== null) {
+        this.callTo = null;
+      }
     }
   },
   created() {
     this.getToken();
     this.listenIncomingCalls();
-    this.getCallsHistory();
   },
   async mounted() {
     await this.getUsers();
@@ -287,33 +320,34 @@ export default {
         <call-status :activity="activity" :available="available" />
         <div id="outbound-calls" class="d-flex mb-3">
           <div class="mr-4">
-            <b-form-select
-              style="width: 360px"
-              v-model="selectUser"
-              :options="usersToCall"
-              :disabled="onPhone"
-            ></b-form-select>
-            <div style="display: inline-block">
-              <b-button
-                class="mx-2"
-                variant="success"
-                @click="toggleCall"
-                v-if="!onPhone"
-              >
-                <b-icon-telephone></b-icon-telephone>
-              </b-button>
-              <b-button
-                class="mx-2"
-                variant="danger"
-                @click="toggleCall"
-                v-else
-              >
-                <b-icon-telephone-x></b-icon-telephone-x>
-              </b-button>
-              <b-button @click="toggleMute">
-                <b-icon-mic v-if="!muted"></b-icon-mic>
-                <b-icon-mic-mute v-else></b-icon-mic-mute>
-              </b-button>
+            <div class="d-flex align-items-center">
+              <b-form-input class="mr-2" style="width: 200px" :disabled="onPhone" v-model="callNumber" placeholder="+123456789" @input="onCallNumberInput"></b-form-input>
+              <span>Or</span>
+              <div class="ml-2">
+                <v-select style="min-width: 300px" :options="usersToCall" :disabled="onPhone" v-model="callTo" :reduce="usr => usr.phoneNumber" placeholder="Call to User/Contact" @input="onCallToInput" />
+              </div>
+              <div style="display: inline-block">
+                <b-button
+                  class="mx-2"
+                  variant="success"
+                  @click="toggleCall"
+                  v-if="!onPhone"
+                >
+                  <b-icon-telephone></b-icon-telephone>
+                </b-button>
+                <b-button
+                  class="mx-2"
+                  variant="danger"
+                  @click="toggleCall"
+                  v-else
+                >
+                  <b-icon-telephone-x></b-icon-telephone-x>
+                </b-button>
+                <b-button @click="toggleMute">
+                  <b-icon-mic v-if="!muted"></b-icon-mic>
+                  <b-icon-mic-mute v-else></b-icon-mic-mute>
+                </b-button>
+              </div>
             </div>
           </div>
           <div style="display: inline-block">
@@ -325,19 +359,21 @@ export default {
         <b-table-simple sticky-header="800px">
           <b-thead>
             <b-tr>
-              <b-th>Contact</b-th>
+              <b-th>From</b-th>
+              <b-th>To</b-th>
               <b-th>Direction</b-th>
               <b-th>Date</b-th>
-              <b-th>Time</b-th>
+              <b-th>Duration</b-th>
               <b-th></b-th>
             </b-tr>
           </b-thead>
           <b-tbody v-if="calls.length > 0">
             <b-tr v-for="call in calls" :key="call.id">
               <b-td>{{ call.from }}</b-td>
+              <b-td>{{ call.to }}</b-td>
               <b-td>{{ call.direction }}</b-td>
               <b-td>{{ call.createdAt | formatDate }} </b-td>
-              <b-td></b-td>
+              <b-td>{{ call.callDuration | formatCallDuration }}</b-td>
               <b-td></b-td>
             </b-tr>
           </b-tbody>
