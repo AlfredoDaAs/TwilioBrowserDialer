@@ -155,10 +155,25 @@ router.post('/enqueue', validateTwilioRequest, async (req, res) => {
 // POST /assignment
 router.post('/assignment', validateTwilioRequest, (req, res) => {
   res.type('application/json');
+
+  console.log('body', req.body);
+  const taskAttributes = (req.body.TaskAttributes)? JSON.parse(req.body.TaskAttributes) : {};
+  
   res.send({
-    instruction: "conference",
+    instruction: "call",
+    from: taskAttributes.from,
+    url: `${url}/conference?conferenceId=${req.body.TaskSid}`,
     post_work_activity_sid: idle
   });
+});
+
+router.post('/conference', validateTwilioRequest, (req, res) => {
+  const { conferenceId } = req.query;
+  const voiceResponse = new VoiceResponse();
+
+  /* voiceResponse.dial().conference({
+
+  }, conferenceId) */
 });
 
 router.post('/events', validateTwilioRequest, async (req, res) => {
